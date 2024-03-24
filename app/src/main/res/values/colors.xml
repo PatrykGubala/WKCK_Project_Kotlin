@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="clean_white">#E5E2E1</color>
-    <color name="white">#D3D0CE</color>
-    <color name="grey">#606470</color>
-    <color name="full_white">#FFFFFF</color>
-    <color name="dark_grey">#1E1E23</color>
-    <color name="full_black">#FF000000</color>
-    <color name="violet">#9747FF</color>
-    <color name="black">#0C0B0B</color>
-    <color name="black_app_background">#18191C</color>
+    <color name="white">#F5F5F5</color>
+    <color name="grey">#838383</color>
+    <color name="dark_grey">#191919</color>
+    <color name="black">#050505</color>
+    <color name="full_black">#000000</color>
     <color name="green">#0C9800</color>
     <color name="red">#D93600</color>
-    <color name="turquoise">#008089</color>
-    <color name="light_turquoise">#60F5FF</color>
     <color name="yellow">#CDE24A</color>
+    <color name="mild_red">#7C2648</color>
 </resources>

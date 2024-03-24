@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/messagesFragment">
+    <fragment
+        tools:layout="@layout/fragment_messages"
+        android:id="@+id/messagesFragment"
+        android:name="com.example.firstapp.ui.messages.MessageFragment"
+        android:label="MessageFragment" >
+        <action
+            android:id="@+id/action_messagesFragment_to_friendsFragment"
+            app:destination="@id/friendsFragment" />
+        <action
+            android:id="@+id/action_messagesFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_friends"
+        android:id="@+id/friendsFragment"
+        android:name="com.example.firstapp.ui.friends.FriendsFragment"
+        android:label="FriendsFragment" />
+    <fragment
+        tools:layout="@layout/fragment_profile"
+        android:id="@+id/profileFragment"
+        android:name="com.example.firstapp.ui.profile.ProfileFragment"
+        android:label="ProfileFragment" >
+
+    </fragment>
+</navigation>

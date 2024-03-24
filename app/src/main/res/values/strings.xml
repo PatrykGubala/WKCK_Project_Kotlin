@@ -3,4 +3,7 @@
     <string name="title_home">Wiadomości</string>
     <string name="title_friends">Znajomi</string>
     <string name="title_profile">Profil</string>
+    <string name="title_login">LOGIN</string>
+    <string name="title_register">Register</string>
+    <string name="logout"><u>Wyloguj</u></string>
 </resources>
