@@ -7,6 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
+import android.widget.RadioGroup
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentProfileBinding
@@ -14,6 +16,7 @@ import com.example.firstapp.ui.BaseFragment
 import com.example.firstapp.ui.auth.FirebaseAuthManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 
@@ -22,89 +25,119 @@ class ProfileFragment : BaseFragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var userId: String
+    private lateinit var userDocRef: DocumentReference
+
+    private val userSnapshotListener = FirebaseFirestore.getInstance()
+        .collection("Users")
+        .document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
+        .addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.w(TAG, "Listen failed", exception)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null && snapshot.exists()) {
+                val email = snapshot.getString("email")
+                val username = snapshot.getString("username")
+                val usernameCode = snapshot.getString("usernameCode")
+
+                binding.textViewEmail.text = email
+                binding.textViewUsername.text = username
+                binding.textViewUsernameCode.text = "#$usernameCode"
+
+                val photoUrl = snapshot.getString("profileImageUrl")
+                if (photoUrl != null) {
+                    Log.d(TAG, photoUrl)
+                    loadProfileImageWithGlide(photoUrl)
+                }
+            } else {
+                Log.d(TAG, "Current data: null")
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        fetchUserData()
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        userDocRef = FirebaseFirestore.getInstance().collection("Users").document(userId)
+
+        binding.imageButtonStatus.setOnClickListener {
+            showChangeStatusBottomSheet()
+        }
 
         binding.buttonLogout.setOnClickListener {
             logout()
         }
-        binding.imageButtonStatus.setOnClickListener {
-            showChangeStatusBottomSheet()
-        }
-        return root
+    }
+    override fun onPause() {
+        super.onPause()
     }
 
-    private fun fetchUserData() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        Log.d(TAG, "User ID: $userId")
+    override fun onStop() {
+        super.onStop()
+    }
 
-        val userDocRef = userId?.let {
-            FirebaseFirestore.getInstance().collection("Users").document(it)
-        }
+    private fun dismissBottomSheetDialog() {
+        val dialog = (binding.imageButtonStatus.tag as? BottomSheetDialog)
+        dialog?.dismiss()
+    }
 
-        userDocRef?.get()
-            ?.addOnSuccessListener { document ->
-                if (document != null) {
-                    val email = document.getString("email")
-                    val username = document.getString("username")
-                    val usernameCode = document.getString("usernameCode")
+    private fun showChangeStatusBottomSheet() {
+        userDocRef.get()
+            .addOnSuccessListener { document ->
+                val currentStatus = document.getString("status")
+                currentStatus?.let {
+                    val bottomSheetDialog = BottomSheetDialog(requireContext())
+                    val view = layoutInflater.inflate(R.layout.dialog_profile_status_image_change, null)
 
-                    binding.textViewEmail.text = email
-                    binding.textViewUsername.text = username
-                    binding.textViewUsernameCode.text = "#$usernameCode"
+                    val radioGroupStatus = view.findViewById<RadioGroup>(R.id.radioGroupStatus)
 
-                    val photoUrl = document.getString("profilePhoto")
-                    if (photoUrl != null) {
-                        Log.d(TAG, photoUrl)
+                    when (it) {
+                        "Dostępny" -> view.findViewById<RadioButton>(R.id.radioGreen).isChecked = true
+                        "Zaraz wracam" -> view.findViewById<RadioButton>(R.id.radioYellow).isChecked = true
+                        "Nie przeszkadzać" -> view.findViewById<RadioButton>(R.id.radioRed).isChecked = true
                     }
 
-                    photoUrl?.let { loadProfileImageWithGlide(it) }
-                } else {
-                    Log.d(TAG, "No such document")
+                    radioGroupStatus.setOnCheckedChangeListener { _, checkedId ->
+                        val status = when (checkedId) {
+                            R.id.radioGreen -> "Dostępny"
+                            R.id.radioYellow -> "Zaraz wracam"
+                            R.id.radioRed -> "Nie przeszkadzać"
+                            else -> ""
+                        }
+                        updateProfileStatus(status)
+                        bottomSheetDialog.dismiss()
+                    }
+
+                    bottomSheetDialog.setContentView(view)
+                    bottomSheetDialog.show()
                 }
             }
-            ?.addOnFailureListener { exception ->
-                Log.d(TAG, "get failed with ", exception)
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error fetching current status", e)
             }
-    }
-    private fun showChangeStatusBottomSheet() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_profile_status_image_change, null)
-        val dialog = BottomSheetDialog(requireContext())
-        dialog.setContentView(dialogView)
-
-        val radioGreen = dialogView.findViewById<RadioButton>(R.id.radioGreen)
-        val radioRed = dialogView.findViewById<RadioButton>(R.id.radioRed)
-        val radioYellow = dialogView.findViewById<RadioButton>(R.id.radioYellow)
-
-        radioGreen.setOnClickListener {
-            updateProfileStatus("Dostępny")
-            dialog.dismiss()
-        }
-
-        radioRed.setOnClickListener {
-            updateProfileStatus("Zaraz wracam")
-            dialog.dismiss()
-        }
-
-        radioYellow.setOnClickListener {
-            updateProfileStatus("Nie przeszkadzać")
-            dialog.dismiss()
-        }
-
-        dialog.show()
-
-
     }
 
     private fun updateProfileStatus(status: String) {
         Log.d(TAG, "Updating profile status to: $status")
+        userDocRef.update("status", status)
+            .addOnSuccessListener {
+                Log.d(TAG, "Profile status updated successfully")
+                dismissBottomSheetDialog()
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error updating profile status", e)
+            }
     }
 
     private fun loadProfileImageWithGlide(photoUrl: String) {
@@ -120,6 +153,7 @@ class ProfileFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        userSnapshotListener.remove()
     }
 
     companion object {
