@@ -45,7 +45,7 @@
         android:elevation="3dp"
         app:layout_constraintStart_toStartOf="@+id/cardViewProfileAvatar"
         app:layout_constraintTop_toTopOf="@+id/cardViewProfileAvatar"
-        app:srcCompat="@drawable/chrome" />
+        app:srcCompat="@drawable/chrome_green" />
     <TextView
         android:id="@+id/textViewUsername"
         android:layout_width="wrap_content"

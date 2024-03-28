@@ -51,10 +51,13 @@ class ProfileFragment : BaseFragment() {
                     Log.d(TAG, photoUrl)
                     loadProfileImageWithGlide(photoUrl)
                 }
+                val status = snapshot.getString("status")
+                updateStatusImageButton(status)
             } else {
                 Log.d(TAG, "Current data: null")
             }
         }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,7 +68,18 @@ class ProfileFragment : BaseFragment() {
 
         return binding.root
     }
+    private fun updateStatusImageButton(status: String?) {
+        status?.let {
+            when (it) {
+                "Dostępny" -> binding.imageButtonStatus.setImageResource(R.drawable.chrome_green)
+                "Zaraz wracam" -> binding.imageButtonStatus.setImageResource(R.drawable.chrome_yellow)
+                "Nie przeszkadzać" -> binding.imageButtonStatus.setImageResource(R.drawable.chrome_red)
+                else -> {
 
+                }
+            }
+        }
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
