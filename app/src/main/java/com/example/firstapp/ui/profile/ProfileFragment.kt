@@ -1,14 +1,19 @@
 package com.example.firstapp.ui.profile
 
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import com.bumptech.glide.Glide
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentProfileBinding
@@ -88,6 +93,9 @@ class ProfileFragment : BaseFragment() {
         binding.imageButtonStatus.setOnClickListener {
             showChangeStatusBottomSheet()
         }
+        binding.imageButtonEditProfile.setOnClickListener {
+            showEditProfileBottomSheet()
+        }
 
         binding.buttonLogout.setOnClickListener {
             logout()
@@ -105,14 +113,74 @@ class ProfileFragment : BaseFragment() {
         val dialog = (binding.imageButtonStatus.tag as? BottomSheetDialog)
         dialog?.dismiss()
     }
+    private fun showEditProfileBottomSheet() {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.bottomsheet_profile_edit, null)
 
+        val buttonEditProfileNickname = view.findViewById<Button>(R.id.buttonEditProfileNickname)
+        val buttonEditProfilePicture = view.findViewById<Button>(R.id.buttonEditProfilePicture)
+
+        buttonEditProfileNickname.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        buttonEditProfilePicture.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            selectImageFromGallery()
+        }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
+
+
+    }
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            val imageUri = data?.data
+            imageUri?.let { uploadImageToFirebaseStorage(it) }
+        }
+    }
+
+    private fun selectImageFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        pickImage.launch(intent)
+    }
+
+    private fun uploadImageToFirebaseStorage(imageUri: Uri) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imageRef = storageRef.child("images/$userId/profilePhoto.png")
+
+        imageRef.putFile(imageUri)
+            .addOnSuccessListener { uploadTask ->
+                uploadTask.storage.downloadUrl.addOnSuccessListener { uri ->
+                    val profileImageUrl = uri.toString()
+                    userDocRef.update("profileImageUrl", profileImageUrl)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Profile image URL updated successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Error updating profile image URL", e)
+                        }
+
+                    Log.d(TAG, "Image uploaded successfully")
+                }.addOnFailureListener { e ->
+                    Log.e(TAG, "Error getting download URL", e)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error uploading image", e)
+            }
+    }
     private fun showChangeStatusBottomSheet() {
         userDocRef.get()
             .addOnSuccessListener { document ->
                 val currentStatus = document.getString("status")
                 currentStatus?.let {
                     val bottomSheetDialog = BottomSheetDialog(requireContext())
-                    val view = layoutInflater.inflate(R.layout.dialog_profile_status_image_change, null)
+                    val view = layoutInflater.inflate(R.layout.bottomsheet_profile_status_change, null)
 
                     val radioGroupStatus = view.findViewById<RadioGroup>(R.id.radioGroupStatus)
 
