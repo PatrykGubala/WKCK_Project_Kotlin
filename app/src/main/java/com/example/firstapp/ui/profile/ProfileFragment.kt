@@ -1,6 +1,5 @@
 package com.example.firstapp.ui.profile
 
-
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -13,7 +12,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentProfileBinding
@@ -23,6 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.storage.FirebaseStorage
 
 class ProfileFragment : BaseFragment() {
@@ -33,10 +36,41 @@ class ProfileFragment : BaseFragment() {
     private lateinit var userId: String
     private lateinit var userDocRef: DocumentReference
 
-    private val userSnapshotListener = FirebaseFirestore.getInstance()
-        .collection("Users")
-        .document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
-        .addSnapshotListener { snapshot, exception ->
+    private lateinit var userSnapshotListener: ListenerRegistration
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        userDocRef = FirebaseFirestore.getInstance().collection("Users").document(userId)
+
+        binding.imageButtonStatus.setOnClickListener {
+            showChangeStatusBottomSheet()
+        }
+        binding.imageButtonEditProfile.setOnClickListener {
+            showEditProfileBottomSheet()
+        }
+        binding.imageButtonChangeEmail.setOnClickListener {
+            showChangeProfileEmail()
+        }
+
+        binding.buttonLogout.setOnClickListener {
+            logout()
+        }
+
+        setupProfileDataObserver()
+    }
+
+    private fun setupProfileDataObserver() {
+        userSnapshotListener = userDocRef.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
                 Log.w(TAG, "Listen failed", exception)
                 return@addSnapshotListener
@@ -53,26 +87,27 @@ class ProfileFragment : BaseFragment() {
 
                 val photoUrl = snapshot.getString("profileImageUrl")
                 if (photoUrl != null) {
-                    Log.d(TAG, photoUrl)
                     loadProfileImageWithGlide(photoUrl)
                 }
                 val status = snapshot.getString("status")
                 updateStatusImageButton(status)
+
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                if (currentUser != null && currentUser.email != email) {
+                    userDocRef.update("email", currentUser.email)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Email updated in Firestore to match the authenticated user's email")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Error updating email in Firestore", e)
+                        }
+                }
             } else {
                 Log.d(TAG, "Current data: null")
             }
         }
-
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
-
-        return binding.root
     }
+
     private fun updateStatusImageButton(status: String?) {
         status?.let {
             when (it) {
@@ -80,39 +115,19 @@ class ProfileFragment : BaseFragment() {
                 "Zaraz wracam" -> binding.imageButtonStatus.setImageResource(R.drawable.chrome_yellow)
                 "Nie przeszkadzać" -> binding.imageButtonStatus.setImageResource(R.drawable.chrome_red)
                 else -> {
-
                 }
             }
         }
-    }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        userDocRef = FirebaseFirestore.getInstance().collection("Users").document(userId)
-
-        binding.imageButtonStatus.setOnClickListener {
-            showChangeStatusBottomSheet()
-        }
-        binding.imageButtonEditProfile.setOnClickListener {
-            showEditProfileBottomSheet()
-        }
-
-        binding.buttonLogout.setOnClickListener {
-            logout()
-        }
-    }
-    override fun onPause() {
-        super.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
     }
 
     private fun dismissBottomSheetDialog() {
         val dialog = (binding.imageButtonStatus.tag as? BottomSheetDialog)
         dialog?.dismiss()
     }
+private fun showChangeProfileEmail(){
+    val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangeEmailFragment()
+    findNavController().navigate(action)
+}
     private fun showEditProfileBottomSheet() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.bottomsheet_profile_edit, null)
@@ -122,6 +137,8 @@ class ProfileFragment : BaseFragment() {
 
         buttonEditProfileNickname.setOnClickListener {
             bottomSheetDialog.dismiss()
+            val action = ProfileFragmentDirections.actionProfileFragmentToProfileEditUsernameFragment()
+            findNavController().navigate(action)
         }
 
         buttonEditProfilePicture.setOnClickListener {
@@ -131,8 +148,10 @@ class ProfileFragment : BaseFragment() {
 
         bottomSheetDialog.setContentView(view)
         bottomSheetDialog.show()
+    }
 
-
+    private fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -174,6 +193,7 @@ class ProfileFragment : BaseFragment() {
                 Log.e(TAG, "Error uploading image", e)
             }
     }
+
     private fun showChangeStatusBottomSheet() {
         userDocRef.get()
             .addOnSuccessListener { document ->
@@ -227,6 +247,7 @@ class ProfileFragment : BaseFragment() {
             .load(photoUrl)
             .into(binding.imageViewProfileAvatar)
     }
+
     private fun logout() {
         FirebaseAuthManager.logoutUser()
         logoutApp()

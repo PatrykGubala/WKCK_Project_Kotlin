@@ -26,6 +26,36 @@
         android:id="@+id/profileFragment"
         android:name="com.example.firstapp.ui.profile.ProfileFragment"
         android:label="ProfileFragment" >
+        <action
+            android:id="@+id/action_profileFragment_to_profileEditUsernameFragment"
+            app:destination="@id/profileEditUsernameFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileChangeEmailFragment"
+            app:destination="@id/profileChangeEmailFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileChangePasswordFragment"
+            app:destination="@id/profileChangePasswordFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileEditUsernameFragment"
+        android:name="com.example.firstapp.ui.profile.ProfileEditUsernameFragment"
+        android:label="ProfileEditUsernameFragment"
+        tools:layout="@layout/fragment_profile_edit_username" >
+
+    </fragment>
+    <fragment
+        android:id="@+id/profileChangeEmailFragment"
+        android:name="com.example.firstapp.ui.profile.ProfileChangeEmailFragment"
+        android:label="ProfileChangeEmailFragment"
+        tools:layout="@layout/fragment_profile_change_email" >
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileChangePasswordFragment"
+        android:name="com.example.firstapp.ui.profile.ProfileChangePasswordFragment"
+        android:label="ProfileChangePasswordFragment"
+        tools:layout="@layout/fragment_profile_change_password" >
 
     </fragment>
 </navigation>
