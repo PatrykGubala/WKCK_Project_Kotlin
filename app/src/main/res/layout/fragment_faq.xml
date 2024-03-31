@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- First Topic -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Main Topic -->
+            <TextView
+                android:id="@+id/mainTopicTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Main Topic"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
+
+            <!-- Expand/Collapse Button -->
+            <ImageButton
+                android:id="@+id/expandCollapseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/chevron_right30dpx30dp"
+                android:background="@null" />
+
+            <!-- Expanded Text -->
+            <TextView
+                android:id="@+id/expandedTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Expanded Text Here"
+                android:textColor="@color/white"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Second Topic -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Second Topic -->
+            <TextView
+                android:id="@+id/secondTopicTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Second Topic"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
+
+            <!-- Expand/Collapse Button -->
+            <ImageButton
+                android:id="@+id/secondExpandCollapseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/chevron_right30dpx30dp"
+                android:background="@null" />
+
+            <!-- Expanded Text -->
+            <TextView
+                android:id="@+id/secondExpandedTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Expanded Text Here"
+                android:textColor="@color/white"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Add more topics/buttons as needed -->
+
+    </LinearLayout>
+</ScrollView>

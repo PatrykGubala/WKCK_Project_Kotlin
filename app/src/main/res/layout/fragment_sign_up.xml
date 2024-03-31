@@ -11,6 +11,18 @@
 
 
     <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+        android:text="Wygenerowany kod:"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayoutUsername" />
+
+    <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,10 +38,12 @@
         android:id="@+id/textInputLayoutUsername"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditTextLayoutUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
@@ -43,19 +57,47 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayoutPassword"
+        android:id="@+id/textInputLayoutGeneratedUsernameCode"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
+        android:clickable="false"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2">
+        app:layout_constraintTop_toBottomOf="@+id/textView6">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditTextGeneratedUsernameCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:backgroundTint="@color/dark_grey"
-            android:inputType="textPassword"
+            android:clickable="false"
+            android:hint="Wygenerowany kod:"
+            android:inputType="textEmailAddress"
+            android:textAlignment="viewStart"
+            android:textColor="@color/white"
+            android:textColorHighlight="@color/grey"
+            android:textColorHint="@color/grey"
+            android:textColorLink="@color/grey" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutPassword"
+        android:layout_width="409dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditTextLayoutPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:backgroundTint="@color/dark_grey"
             android:hint="Hasło:"
+            android:inputType="textPassword"
             android:textAlignment="viewStart"
             android:textColor="@color/white"
             android:textColorHighlight="@color/grey"
@@ -131,16 +173,18 @@
         android:id="@+id/textInputLayoutRepeatPassword"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditTextLayoutRepeatPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:backgroundTint="@color/dark_grey"
-            android:inputType="textPassword"
             android:hint="Powtórz hasło:"
+            android:inputType="textPassword"
             android:textAlignment="viewStart"
             android:textColor="@color/white"
             android:textColorHighlight="@color/grey"
@@ -152,17 +196,19 @@
         android:id="@+id/textInputLayoutEmail"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputEditTextLayoutEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:backgroundTint="@color/dark_grey"
-            android:inputType="textEmailAddress"
-
             android:hint="Adres e-mail:"
+
+            android:inputType="textEmailAddress"
             android:textAlignment="viewStart"
             android:textColor="@color/white"
             android:textColorHighlight="@color/grey"
@@ -170,7 +216,6 @@
             android:textColorLink="@color/grey" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- "Go back" button -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/goBackToolbar"
         android:layout_width="409dp"

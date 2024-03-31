@@ -1,78 +1,63 @@
 package com.example.firstapp.ui.profile
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageButton
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import com.example.firstapp.R
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
 
 class ProfileChangePasswordFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var currentUser: FirebaseUser
 
-    private lateinit var currentEmailLayout: TextInputLayout
-    private lateinit var newEmailLayout: TextInputLayout
-    private lateinit var passwordLayout: TextInputLayout
+    private lateinit var newPasswordLayout: TextInputLayout
+    private lateinit var currentPasswordLayout: TextInputLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_profile_change_email, container, false)
+        val view = inflater.inflate(R.layout.fragment_profile_change_password, container, false)
 
         auth = FirebaseAuth.getInstance()
-        currentUser = auth.currentUser!!
 
-        currentEmailLayout = view.findViewById(R.id.textInputLayoutEmail)
-        newEmailLayout = view.findViewById(R.id.textInputLayoutNewEmail)
-        passwordLayout = view.findViewById(R.id.textInputLayoutPassword)
+        newPasswordLayout = view.findViewById(R.id.textInputLayoutNewPassword)
+        currentPasswordLayout = view.findViewById(R.id.textInputLayoutPassword)
 
-        view.findViewById<Button>(R.id.changeEmailButton).setOnClickListener {
-            handleChangeEmail()
-        }
-
-        view.findViewById<ImageButton>(R.id.back_button).setOnClickListener {
-            findNavController().popBackStack()
+        view.findViewById<Button>(R.id.buttonChangePassword).setOnClickListener {
+            handleChangePassword()
         }
 
         return view
     }
 
-    private fun handleChangeEmail() {
-        val currentEmail = currentEmailLayout.editText?.text.toString().trim()
-        val newEmail = newEmailLayout.editText?.text.toString().trim()
-        val password = passwordLayout.editText?.text.toString()
+    private fun handleChangePassword() {
+        val newPassword = newPasswordLayout.editText?.text.toString().trim()
+        val currentPassword = currentPasswordLayout.editText?.text.toString()
 
-        if (currentEmail.isEmpty() || newEmail.isEmpty() || password.isEmpty()) {
+        if (newPassword.isEmpty() || currentPassword.isEmpty()) {
             return
         }
 
         val user = FirebaseAuth.getInstance().currentUser
 
         if (user != null) {
-            val credential = EmailAuthProvider.getCredential(currentEmail, password)
+            val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
             user.reauthenticate(credential)
                 .addOnCompleteListener { reauthTask ->
                     if (reauthTask.isSuccessful) {
-                        user.verifyBeforeUpdateEmail(newEmail)
-                            .addOnCompleteListener { updateEmailTask ->
-                                if (updateEmailTask.isSuccessful) {
-                                    Log.d(TAG, "Verification email sent successfully")
-                                } else {
-                                    Log.e(TAG, "Verification email sending failed", updateEmailTask.exception)
-                                }
+                        user.updatePassword(newPassword)
+                            .addOnSuccessListener {
+                                Log.d(TAG, "Password updated successfully")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e(TAG, "Password update failed", e)
                             }
                     } else {
                         Log.e(TAG, "Reauthentication failed", reauthTask.exception)
@@ -83,4 +68,7 @@ class ProfileChangePasswordFragment : Fragment() {
         }
     }
 
+    companion object {
+        private const val TAG = "ProfileChangePasswordFragment"
+    }
 }

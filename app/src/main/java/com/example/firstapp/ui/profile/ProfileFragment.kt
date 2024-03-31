@@ -61,7 +61,9 @@ class ProfileFragment : BaseFragment() {
         binding.imageButtonChangeEmail.setOnClickListener {
             showChangeProfileEmail()
         }
-
+        binding.imageButtonChangePassword.setOnClickListener {
+            showChangeProfilePassword()
+        }
         binding.buttonLogout.setOnClickListener {
             logout()
         }
@@ -124,10 +126,14 @@ class ProfileFragment : BaseFragment() {
         val dialog = (binding.imageButtonStatus.tag as? BottomSheetDialog)
         dialog?.dismiss()
     }
-private fun showChangeProfileEmail(){
-    val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangeEmailFragment()
-    findNavController().navigate(action)
-}
+    private fun showChangeProfileEmail(){
+        val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangeEmailFragment()
+        findNavController().navigate(action)
+    }
+    private fun showChangeProfilePassword(){
+        val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangePasswordFragment()
+        findNavController().navigate(action)
+    }
     private fun showEditProfileBottomSheet() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.bottomsheet_profile_edit, null)
