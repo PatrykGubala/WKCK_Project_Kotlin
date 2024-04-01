@@ -6,7 +6,7 @@
     <color name="black">#050505</color>
     <color name="full_black">#000000</color>
     <color name="green">#0C9800</color>
-    <color name="red">#D93600</color>
+    <color name="red">#D90000</color>
     <color name="yellow">#CDE24A</color>
-    <color name="mild_red">#FF2400</color>
+    <color name="mild_red">#9F0F31</color>
 </resources>

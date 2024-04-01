@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black">
@@ -9,75 +11,86 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- First Topic -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Main Topic -->
-            <TextView
-                android:id="@+id/mainTopicTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Main Topic"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-            <!-- Expand/Collapse Button -->
-            <ImageButton
-                android:id="@+id/expandCollapseButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/chevron_right30dpx30dp"
-                android:background="@null" />
+                <ImageButton
+                    android:id="@+id/expandCollapseButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:src="@drawable/selector_faq_chevron"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Expanded Text -->
+                <TextView
+                    android:id="@+id/mainTopicTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Czy można wziąć jeżyka do domu?"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <TextView
                 android:id="@+id/expandedTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Expanded Text Here"
+                android:text="Ależ można\nJeszcze jak\ngdyby nie było można to inaczej stworzony był świat"
                 android:textColor="@color/white"
                 android:visibility="gone" />
         </LinearLayout>
-
-        <!-- Second Topic -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Second Topic -->
-            <TextView
-                android:id="@+id/secondTopicTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Second Topic"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-            <!-- Expand/Collapse Button -->
-            <ImageButton
-                android:id="@+id/secondExpandCollapseButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/chevron_right30dpx30dp"
-                android:background="@null" />
+                <ImageButton
+                    android:id="@+id/expandCollapseButton2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:src="@drawable/selector_faq_chevron"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Expanded Text -->
+                <TextView
+                    android:id="@+id/mainTopicTextView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Czy można wziąć dwa jeżyki do domu?"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <TextView
-                android:id="@+id/secondExpandedTextView"
+                android:id="@+id/expandedTextView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Expanded Text Here"
+                android:text="Ależ można\nJeszcze jak\ngdyby nie było można to inaczej stworzony był świat"
                 android:textColor="@color/white"
                 android:visibility="gone" />
         </LinearLayout>
-
-        <!-- Add more topics/buttons as needed -->
 
     </LinearLayout>
 </ScrollView>

@@ -20,7 +20,16 @@
         tools:layout="@layout/fragment_friends"
         android:id="@+id/friendsFragment"
         android:name="com.example.firstapp.ui.friends.FriendsFragment"
-        android:label="FriendsFragment" />
+        android:label="FriendsFragment" >
+        <action
+            android:id="@+id/action_friendsFragment_to_friendsInviteFragment"
+            app:destination="@id/friendsInviteFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_friends_invite"
+        android:id="@+id/friendsInviteFragment"
+        android:name="com.example.firstapp.ui.friends.invite.FriendsInviteFragment"
+        android:label="FriendsInviteFragment" />
     <fragment
         tools:layout="@layout/fragment_profile"
         android:id="@+id/profileFragment"
@@ -35,12 +44,22 @@
         <action
             android:id="@+id/action_profileFragment_to_profileChangePasswordFragment"
             app:destination="@id/profileChangePasswordFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileFriendsRequestsFragment"
+            app:destination="@id/profileFriendsRequestsFragment" />
     </fragment>
     <fragment
         android:id="@+id/profileEditUsernameFragment"
         android:name="com.example.firstapp.ui.profile.ProfileEditUsernameFragment"
         android:label="ProfileEditUsernameFragment"
-        tools:layout="@layout/fragment_profile_edit_username" >
+        tools:layout="@layout/fragment_profile_friends_requests" >
+
+    </fragment>
+    <fragment
+        android:id="@+id/profileFriendsRequestsFragment"
+        android:name="com.example.firstapp.ui.profile.requests.FriendsRequestsFragment"
+        android:label="FriendsRequestsFragment"
+        tools:layout="@layout/fragment_profile_friends_requests" >
 
     </fragment>
     <fragment

@@ -1,7 +1,7 @@
 package com.example.firstapp.ui.data
 
 import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.PropertyName
+
 
 data class User(
                 var profileImageUrl: String? = null,
@@ -12,5 +12,6 @@ data class User(
                 val status: String? = null,
                 val image: String? = null,
                 val friends: List<String>? = null,
+                val friendsRequests: List<String>? = null,
                 val conversations: List<DocumentReference>? = null
 )

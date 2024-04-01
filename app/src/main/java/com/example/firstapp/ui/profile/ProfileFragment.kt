@@ -14,7 +14,6 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.firstapp.R
@@ -63,6 +62,9 @@ class ProfileFragment : BaseFragment() {
         }
         binding.imageButtonChangePassword.setOnClickListener {
             showChangeProfilePassword()
+        }
+        binding.imageButtonFriendsRequests.setOnClickListener {
+            showProfileFriendsRequests()
         }
         binding.buttonLogout.setOnClickListener {
             logout()
@@ -132,6 +134,10 @@ class ProfileFragment : BaseFragment() {
     }
     private fun showChangeProfilePassword(){
         val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangePasswordFragment()
+        findNavController().navigate(action)
+    }
+    private fun showProfileFriendsRequests(){
+        val action = ProfileFragmentDirections.actionProfileFragmentToProfileFriendsRequestsFragment()
         findNavController().navigate(action)
     }
     private fun showEditProfileBottomSheet() {

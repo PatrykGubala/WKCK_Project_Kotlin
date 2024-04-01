@@ -7,13 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentSignUpBinding
 import com.example.firstapp.ui.BaseFragment
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
@@ -79,13 +77,15 @@ class RegisterFragment : BaseFragment() {
                         val userId = auth.currentUser?.uid
                         if (userId != null) {
                             val user = hashMapOf(
+                                "userId" to userId,
                                 "email" to email,
                                 "username" to username,
                                 "usernameCode" to binding.textInputEditTextGeneratedUsernameCode.text.toString(),
                                 "friends" to emptyList<String>(),
+                                "friendsRequests" to emptyList<String>(),
                                 "profileImageUrl" to "",
                                 "status" to "Dostępny",
-                                "conversations" to emptyList<DocumentReference>() // or emptyList<DocumentReference>()
+                                "conversations" to emptyList<DocumentReference>()
                             )
                             db.collection("Users")
                                 .document(userId)
