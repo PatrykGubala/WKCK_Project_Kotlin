@@ -10,10 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstapp.databinding.FragmentConversationsBinding
 import com.example.firstapp.ui.data.Conversation
 import com.example.firstapp.ui.data.Message
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ConversationsFragment : Fragment() {
@@ -39,9 +38,9 @@ class ConversationsFragment : Fragment() {
         setupRecyclerView()
         userId?.let { fetchConversations(it) }
 
-
         return root
     }
+
     private fun setupRecyclerView() {
         conversationsAdapter = ConversationsAdapter(conversationList)
         binding.recyclerView.apply {
@@ -49,13 +48,19 @@ class ConversationsFragment : Fragment() {
             adapter = conversationsAdapter
         }
     }
+
     private fun fetchConversations(userId: String) {
         val conversationsRef = firestore.collection("Users").document(userId)
 
-        conversationsRef.get()
-            .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    val conversationRefs = documentSnapshot.get("conversations") as? List<DocumentReference>
+        conversationsRef.addSnapshotListener { documentSnapshot, exception ->
+            if (exception != null) {
+                Log.e(TAG, "Error fetching conversations", exception)
+                return@addSnapshotListener
+            }
+
+            documentSnapshot?.let { snapshot ->
+                if (snapshot.exists()) {
+                    val conversationRefs = snapshot.get("conversations") as? List<DocumentReference>
                     conversationRefs?.let {
                         fetchConversationsByRefs(it)
                     }
@@ -63,65 +68,62 @@ class ConversationsFragment : Fragment() {
                     Log.d(TAG, "Document does not exist")
                 }
             }
-            .addOnFailureListener { exception ->
-                Log.e(TAG, "Error fetching user document", exception)
-            }
+        }
     }
+
     private fun fetchConversationsByRefs(conversationRefs: List<DocumentReference>) {
-        val conversations = mutableListOf<Conversation>()
+        conversationRefs.forEach { conversationRef ->
+            conversationRef.addSnapshotListener { conversationSnapshot, exception ->
+                if (exception != null) {
+                    Log.e(TAG, "Error fetching conversation", exception)
+                    return@addSnapshotListener
+                }
 
-        val tasks = conversationRefs.map { conversationRef ->
-            conversationRef.get().addOnSuccessListener { conversationSnapshot ->
-                val participants = conversationSnapshot.get("participants") as? List<String>
-                val messages = mutableListOf<Message>()
+                conversationSnapshot?.let {
+                    val conversationId = conversationSnapshot.id
+                    val participants = it.get("participants") as? List<String>
+                    val messages = mutableListOf<Message>()
+                    val status = it.getString("status")
+                    val lastMessageTimestamp = it.getTimestamp("lastMessageTimestamp")
 
-                val messageRefs = conversationSnapshot.get("messages") as? List<DocumentReference>
-                messageRefs?.let { messageRefs ->
-                    val messageTasks = messageRefs.map { messageRef ->
-                        messageRef.get().addOnSuccessListener { messageSnapshot ->
-                            val message = messageSnapshot.toObject(Message::class.java)
-                            message?.let {
-                                messages.add(message)
+                    val messageRefs = it.get("messages") as? List<DocumentReference>
+                    messageRefs?.let { messageRefs ->
+                        messageRefs.forEach { messageRef ->
+                            messageRef.get().addOnSuccessListener { messageSnapshot ->
+                                val message = messageSnapshot.toObject(Message::class.java)
+                                message?.let {
+                                    messages.add(message)
+                                }
+
+                                val lastMessage = messages.lastOrNull()?.message
+                                val lastMessageSender = messages.lastOrNull()?.senderId
+
+                                val conversation = Conversation(
+                                    conversationId = conversationId,
+                                    status = status,
+                                    participants = participants,
+                                    messages = messages,
+                                    lastMessage = lastMessage,
+                                    lastMessageSender = lastMessageSender,
+                                    lastMessageTime = lastMessageTimestamp
+                                )
+
+                                val existingConversation = conversationList.find { it.conversationId == conversationId }
+                                if (existingConversation == null) {
+                                    conversationList.add(conversation)
+                                } else {
+                                    conversationList[conversationList.indexOf(existingConversation)] = conversation
+                                }
+
+                                conversationsAdapter.notifyDataSetChanged()
+                            }.addOnFailureListener { exception ->
+                                Log.e(TAG, "Error fetching message", exception)
                             }
-                        }.addOnFailureListener { exception ->
-                            Log.e(TAG, "Error fetching message", exception)
-                        }
-                    }
-                    Tasks.whenAllSuccess<DocumentSnapshot>(messageTasks).addOnCompleteListener { messageTask ->
-                        if (messageTask.isSuccessful) {
-                            val lastMessage = messages.lastOrNull()?.message
-                            val lastMessageSender = messages.lastOrNull()?.senderId
-
-                            val conversation = Conversation(
-                                participants = participants,
-                                messages = messages,
-                                lastMessage = lastMessage,
-                                lastMessageSender = lastMessageSender
-                            )
-                            conversations.add(conversation)
-                            Log.d(TAG, "Conversations !!!!!!!!!!! fetching messages: $conversations")
-
-                            updateConversations(conversations)
-                        } else {
-                            Log.e(TAG, "Error fetching messages: ${messageTask.exception}")
                         }
                     }
                 }
-            }.addOnFailureListener { exception ->
-                Log.e(TAG, "Error fetching conversation", exception)
             }
         }
-
-        Tasks.whenAllSuccess<DocumentSnapshot>(tasks).addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.e(TAG, "Error fetching conversations: ${task.exception}")
-            }
-        }
-    }
-    private fun updateConversations(conversations: List<Conversation>) {
-        conversationList.clear()
-        conversationList.addAll(conversations)
-        conversationsAdapter.notifyDataSetChanged()
     }
 
     override fun onDestroyView() {
@@ -130,6 +132,6 @@ class ConversationsFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "MessageFragment"
+        private const val TAG = "ConversationsFragment"
     }
 }
