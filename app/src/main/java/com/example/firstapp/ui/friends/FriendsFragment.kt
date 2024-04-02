@@ -80,6 +80,9 @@ class FriendsFragment : Fragment() {
                 .addOnSuccessListener { querySnapshot ->
                     if (!querySnapshot.isEmpty) {
                         val existingConversationId = querySnapshot.documents[0].id
+                        val action = FriendsFragmentDirections
+                            .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
+                        findNavController().navigate(action)
                     } else {
                         createNewConversation(friend)
                     }
@@ -110,6 +113,12 @@ class FriendsFragment : Fragment() {
 
             conversationRef.set(conversationData)
                 .addOnSuccessListener {
+                    val action = FriendsFragmentDirections
+                        .actionFriendsFragmentToSingleConversationFragment(conversationId)
+                    findNavController().navigate(action)
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("FriendsFragment", "Error adding conversation", exception)
                 }
         }
     }

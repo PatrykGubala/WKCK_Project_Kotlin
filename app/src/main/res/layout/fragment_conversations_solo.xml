@@ -35,7 +35,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/friendsImage"
+            android:id="@+id/image_view_friends_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:elevation="2dp"
@@ -46,15 +46,26 @@
     </androidx.cardview.widget.CardView>
 
     <TextView
-        android:id="@+id/title_text"
+        android:id="@+id/text_view_friends_username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="68dp"
         android:layout_marginTop="18dp"
-        android:text="jakubh"
+        android:text="default"
         android:textColor="@color/white"
         android:textSize="20sp"
         app:layout_constraintStart_toEndOf="@+id/back_button"
+        app:layout_constraintTop_toTopOf="@+id/goBackToolbar" />
+
+    <TextView
+        android:id="@+id/text_view_friends_username_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="#XXXX"
+        android:textColor="@color/grey"
+        android:textSize="20sp"
+        app:layout_constraintStart_toEndOf="@+id/text_view_friends_username"
         app:layout_constraintTop_toTopOf="@+id/goBackToolbar" />
 
     <ImageButton
@@ -86,58 +97,58 @@
 
     <ImageButton
         android:id="@+id/imageButtonPlus"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="55dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/search_bar"
         android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerView"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/check" />
+        app:srcCompat="@drawable/plus" />
 
     <ImageButton
         android:id="@+id/imageButtonMicrophone"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="55dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/search_bar"
+        android:layout_marginStart="8dp"
         android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageButtonPlus"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerView"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/check" />
+        app:srcCompat="@drawable/mic" />
 
     <ImageButton
         android:id="@+id/imageButtonSendMessage"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_marginTop="55dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/search_bar"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerView"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/check" />
+        app:srcCompat="@drawable/send" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutMessage"
         android:layout_width="239dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="8dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/imageButtonSendMessage"
         app:layout_constraintHorizontal_bias="0.347"
-        app:layout_constraintStart_toEndOf="@+id/imageButtonMicrophone">
+        app:layout_constraintStart_toEndOf="@+id/imageButtonMicrophone"
+        >
 
         <com.google.android.material.textfield.TextInputEditText
+            app:layout_constraintTop_toTopOf="parent"
             android:id="@+id/textEditTextMessage"
             android:layout_width="241dp"
-            android:layout_height="34dp"
-            android:hint="hint" />
+            android:layout_height="match_parent"
+            android:background="@drawable/search_bar"
+            android:inputType="text"
+            android:padding="2dp"
+
+            android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

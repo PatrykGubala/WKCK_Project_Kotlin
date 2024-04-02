@@ -24,12 +24,26 @@
         <action
             android:id="@+id/action_friendsFragment_to_friendsInviteFragment"
             app:destination="@id/friendsInviteFragment" />
+        <action
+            android:id="@+id/action_friendsFragment_to_singleConversationFragment"
+            app:destination="@id/singleConversationFragment">
+            <argument
+                android:name="conversationId"
+                app:argType="string" />
+        </action>
+
     </fragment>
     <fragment
         tools:layout="@layout/fragment_friends_invite"
         android:id="@+id/friendsInviteFragment"
         android:name="com.example.firstapp.ui.friends.invite.FriendsInviteFragment"
         android:label="FriendsInviteFragment" />
+
+    <fragment
+        tools:layout="@layout/fragment_conversations_solo"
+        android:id="@+id/singleConversationFragment"
+        android:name="com.example.firstapp.ui.conversations.single.SingleConversationFragment"
+        android:label="SingleConversationFragment" />
     <fragment
         tools:layout="@layout/fragment_profile"
         android:id="@+id/profileFragment"
