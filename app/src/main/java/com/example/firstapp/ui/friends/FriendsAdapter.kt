@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 import com.example.firstapp.R
 import com.example.firstapp.ui.data.User
 
-class FriendsAdapter : ListAdapter<User, FriendsAdapter.FriendsViewHolder>(DiffCallback) {
+class FriendsAdapter(private val onClickListener: (User) -> Unit) : ListAdapter<User, FriendsAdapter.FriendsViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendsViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -23,10 +23,6 @@ class FriendsAdapter : ListAdapter<User, FriendsAdapter.FriendsViewHolder>(DiffC
     override fun onBindViewHolder(holder: FriendsViewHolder, position: Int) {
         val friend = getItem(position)
         holder.bind(friend)
-    }
-
-    override fun getItemCount(): Int {
-        return currentList.size
     }
 
     inner class FriendsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -40,6 +36,10 @@ class FriendsAdapter : ListAdapter<User, FriendsAdapter.FriendsViewHolder>(DiffC
             Glide.with(itemView.context)
                 .load(user.profileImageUrl)
                 .into(userImageView)
+
+            itemView.setOnClickListener {
+                onClickListener.invoke(user)
+            }
         }
     }
 

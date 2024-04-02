@@ -6,7 +6,8 @@
     android:background="@color/black"
     android:clickable="true"
     android:focusable="true"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:contextClickable="true">
 
 
     <androidx.cardview.widget.CardView

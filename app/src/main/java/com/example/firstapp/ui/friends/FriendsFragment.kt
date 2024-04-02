@@ -1,6 +1,7 @@
 package com.example.firstapp.ui.friends
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,10 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstapp.databinding.FragmentFriendsBinding
+import com.example.firstapp.ui.data.Message
+import com.example.firstapp.ui.data.User
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class FriendsFragment : Fragment() {
 
@@ -46,15 +51,66 @@ class FriendsFragment : Fragment() {
         }
         viewModel.fetchFriends()
     }
+
     private fun navigateToAddFriendScreen() {
         val action = FriendsFragmentDirections.actionFriendsFragmentToFriendsInviteFragment()
         findNavController().navigate(action)
     }
+
     private fun setupRecyclerView() {
-        friendsAdapter = FriendsAdapter()
+        friendsAdapter = FriendsAdapter { friend ->
+            startConversationWithFriend(friend)
+        }
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = friendsAdapter
+        }
+    }
+
+    private fun startConversationWithFriend(friend: User) {
+        val firestore = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
+        val userId = auth.currentUser?.uid
+
+        userId?.let { currentUserId ->
+            val currentUserFriendConversationRef = firestore.collection("Conversations")
+                .whereEqualTo("participants", listOf(currentUserId, friend.userId))
+
+            currentUserFriendConversationRef.get()
+                .addOnSuccessListener { querySnapshot ->
+                    if (!querySnapshot.isEmpty) {
+                        val existingConversationId = querySnapshot.documents[0].id
+                    } else {
+                        createNewConversation(friend)
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("FriendsFragment", "Error checking conversation existence", exception)
+                }
+        }
+    }
+
+    private fun createNewConversation(friend: User) {
+        val firestore = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
+        val userId = auth.currentUser?.uid
+
+        userId?.let { currentUserId ->
+            val conversationId = firestore.collection("Conversations").document().id
+            val conversationRef = firestore.collection("Conversations").document(conversationId)
+
+            val conversationData = hashMapOf(
+                "status" to "solo",
+                "participants" to listOf(currentUserId, friend.userId),
+                "messages" to listOf<Message>(),
+                "lastMessage" to null,
+                "lastMessageSender" to null,
+                "lastMessageTimestamp" to null
+            )
+
+            conversationRef.set(conversationData)
+                .addOnSuccessListener {
+                }
         }
     }
 
