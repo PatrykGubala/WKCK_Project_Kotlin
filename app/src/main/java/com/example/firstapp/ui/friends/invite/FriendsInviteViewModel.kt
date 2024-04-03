@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.firstapp.ui.data.User
+import com.example.firstapp.ui.friends.FriendsViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,12 +13,18 @@ import com.google.firebase.firestore.Query
 
 class FriendsInviteViewModel : ViewModel() {
 
-    private val _friends = MutableLiveData<List<User>>()
-    val friends: LiveData<List<User>> = _friends
+    private val _friends = MutableLiveData<List<User>?>()
+    val friends: LiveData<List<User>?> = _friends
 
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val userId = auth.currentUser?.uid
+
+    private val friendsViewModel = FriendsViewModel()
+    init {
+        loadFriends()
+    }
+
     fun sendFriendRequest(userId: String, friendUserId: String) {
         firestore.collection("Users").document(friendUserId)
             .update("friendsRequests", FieldValue.arrayUnion(userId))
@@ -28,7 +35,10 @@ class FriendsInviteViewModel : ViewModel() {
                 Log.e("FriendsInviteViewModel", "Error sending friend request", e)
             }
     }
+
     fun searchFriends(searchTerm: String) {
+        _friends.value = null
+
         userId?.let { uid ->
             val username = searchTerm.substringBefore("#", "")
             val usernameCode = searchTerm.substringAfter("#", "")
@@ -47,19 +57,40 @@ class FriendsInviteViewModel : ViewModel() {
             searchQuery.get()
                 .addOnSuccessListener { querySnapshot ->
                     val friendsList = mutableListOf<User>()
+                    val currentUserFriends = friendsViewModel.friends.value.orEmpty()
+
                     for (document in querySnapshot.documents) {
                         val friend = document.toObject(User::class.java)
-                        if (friend?.userId != userId) {
+                        if (friend?.userId != userId &&
+                            !currentUserFriends.any { it.userId == friend?.userId } &&
+                            !friendAlreadyExists(friend?.userId)
+                        ) {
                             friend?.let {
                                 friendsList.add(it)
                             }
                         }
                     }
+                    Log.d("FriendsInviteViewModel", "Filtered friends list: $friendsList")
                     _friends.value = friendsList
                 }
                 .addOnFailureListener { e ->
                     Log.e("FriendsInviteViewModel", "Error searching friends", e)
                 }
         }
+    }
+
+
+    private fun loadFriends() {
+        friendsViewModel.friends.observeForever { friendsList ->
+            friendsList?.let {
+                _friends.value = friendsList
+            }
+        }
+        friendsViewModel.fetchFriends()
+
+    }
+
+    private fun friendAlreadyExists(friendId: String?): Boolean {
+        return _friends.value?.any { it.userId == friendId } ?: false
     }
 }

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goBackToolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageButton
+                        android:id="@+id/expandCollapseButtonTopic1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:src="@drawable/selector_faq_chevron"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/mainTopicTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Czy można wziąć jeżyka do domu?"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <TextView
+                    android:id="@+id/expandedTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ależ można\nJeszcze jak\ngdyby nie było można to inaczej stworzony był świat"
+                    android:textColor="@color/white"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageButton
+                        android:id="@+id/expandCollapseButtonTopic2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:src="@drawable/selector_faq_chevron"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/mainTopicTextView2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Czy można wziąć dwa jeżyki do domu?"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <TextView
+                    android:id="@+id/expandedTextView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="To nie jest tak że można lub nie można\nGdyby nie było można to bóg inaczej stwrozył by świat?\n Ale pomyśl o jeżyku, czy jeżyk naprawde tego chce?\nPewnie tak bo byłoby mu miło np\n To jest trunda kwestia i trzeba nad nią pomyślec"
+                    android:textColor="@color/white"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.appbar.MaterialToolbar
+android:id="@+id/goBackToolbar"
+android:layout_width="409dp"
+android:layout_height="wrap_content"
+android:background="@color/black"
+android:minHeight="?attr/actionBarSize"
+android:theme="?attr/actionBarTheme"
+app:layout_constraintStart_toStartOf="parent"
+app:layout_constraintTop_toTopOf="parent"/>
+
+<TextView
+android:id="@+id/title_text"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_marginStart="20dp"
+android:layout_marginTop="16dp"
+android:text="Najczęstsze pytania"
+android:textColor="@color/white"
+android:textSize="24sp"
+app:layout_constraintStart_toEndOf="@+id/back_button"
+app:layout_constraintTop_toTopOf="@+id/goBackToolbar" />
+
+<ImageButton
+android:id="@+id/back_button"
+android:layout_width="32dp"
+android:layout_height="32dp"
+android:layout_alignParentStart="true"
+android:layout_centerVertical="true"
+android:layout_marginStart="16dp"
+android:layout_marginTop="16dp"
+android:background="?attr/selectableItemBackgroundBorderless"
+android:contentDescription="Go Back"
+android:onClick="onBackPressed"
+android:paddingStart="16dp"
+android:paddingEnd="16dp"
+android:src="@drawable/arrow_left"
+app:layout_constraintStart_toStartOf="parent"
+app:layout_constraintTop_toTopOf="@+id/goBackToolbar" />
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>

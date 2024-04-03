@@ -61,6 +61,9 @@
         <action
             android:id="@+id/action_profileFragment_to_profileFriendsRequestsFragment"
             app:destination="@id/profileFriendsRequestsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileFAQFragment"
+            app:destination="@id/profileFAQFragment" />
     </fragment>
     <fragment
         android:id="@+id/profileEditUsernameFragment"
@@ -69,6 +72,7 @@
         tools:layout="@layout/fragment_profile_friends_requests" >
 
     </fragment>
+
     <fragment
         android:id="@+id/profileFriendsRequestsFragment"
         android:name="com.example.firstapp.ui.profile.requests.FriendsRequestsFragment"
@@ -89,6 +93,14 @@
         android:name="com.example.firstapp.ui.profile.ProfileChangePasswordFragment"
         android:label="ProfileChangePasswordFragment"
         tools:layout="@layout/fragment_profile_change_password" >
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFAQFragment"
+        android:name="com.example.firstapp.ui.profile.faq.ProfileFAQFragment"
+        android:label="ProfileFAQFragment"
+        tools:layout="@layout/fragment_profile_faq" >
 
     </fragment>
 </navigation>

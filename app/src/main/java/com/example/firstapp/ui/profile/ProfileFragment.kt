@@ -63,6 +63,9 @@ class ProfileFragment : BaseFragment() {
         binding.imageButtonChangePassword.setOnClickListener {
             showChangeProfilePassword()
         }
+        binding.imageButtonHelp.setOnClickListener {
+            showProfileFAQ()
+        }
         binding.imageButtonFriendsRequests.setOnClickListener {
             showProfileFriendsRequests()
         }
@@ -134,6 +137,10 @@ class ProfileFragment : BaseFragment() {
     }
     private fun showChangeProfilePassword(){
         val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangePasswordFragment()
+        findNavController().navigate(action)
+    }
+    private fun showProfileFAQ(){
+        val action = ProfileFragmentDirections.actionProfileFragmentToProfileFAQFragment()
         findNavController().navigate(action)
     }
     private fun showProfileFriendsRequests(){
