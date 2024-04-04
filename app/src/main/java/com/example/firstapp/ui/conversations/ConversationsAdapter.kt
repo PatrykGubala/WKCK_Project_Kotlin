@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.firstapp.R
@@ -29,8 +30,14 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
         val conversationImage: ImageView = itemView.findViewById(R.id.userImage)
 
         fun bind(conversation: Conversation) {
-            messageText.text = conversation.lastMessage
-            timeAgo.text = getRelativeTimeAgo(conversation.lastMessageTime?.toDate()?.time ?: 0)
+            itemView.setOnClickListener {
+                val action = ConversationsFragmentDirections.actionMessagesFragmentToSingleConversationFragment(conversationId = conversation.conversationId ?: "")
+                it.findNavController().navigate(action)
+            }
+
+            val lastMessage = conversation.messages?.lastOrNull()
+            messageText.text = lastMessage?.message
+            timeAgo.text = getRelativeTimeAgo(lastMessage?.timestamp?.toDate()?.time ?: 0)
 
             if (conversation.status == "solo" && conversation.participants != null) {
                 val otherParticipantId = conversation.participants.find { it != currentUserId }

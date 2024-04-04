@@ -15,6 +15,14 @@
         <action
             android:id="@+id/action_messagesFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_messagesFragment_to_singleConversationFragment"
+            app:destination="@id/singleConversationFragment">
+            <argument
+                android:name="conversationId"
+                app:argType="string" />
+        </action>
+
     </fragment>
     <fragment
         tools:layout="@layout/fragment_friends"

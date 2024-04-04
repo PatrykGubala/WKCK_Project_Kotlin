@@ -73,59 +73,82 @@ class ConversationsFragment : Fragment() {
 
     private fun fetchConversationsByRefs(conversationRefs: List<DocumentReference>) {
         conversationRefs.forEach { conversationRef ->
-            conversationRef.addSnapshotListener { conversationSnapshot, exception ->
-                if (exception != null) {
-                    Log.e(TAG, "Error fetching conversation", exception)
-                    return@addSnapshotListener
-                }
+            conversationRef.collection("messages")
+                .orderBy("timestamp")
+                .addSnapshotListener { messagesSnapshot, exception ->
+                    if (exception != null) {
+                        Log.e(TAG, "Error fetching messages", exception)
+                        return@addSnapshotListener
+                    }
 
-                conversationSnapshot?.let {
-                    val conversationId = conversationSnapshot.id
-                    val participants = it.get("participants") as? List<String>
-                    val messages = mutableListOf<Message>()
-                    val status = it.getString("status")
-                    val lastMessageTimestamp = it.getTimestamp("lastMessageTimestamp")
+                    messagesSnapshot?.let { snapshot ->
 
-                    val messageRefs = it.get("messages") as? List<DocumentReference>
-                    messageRefs?.let { messageRefs ->
-                        messageRefs.forEach { messageRef ->
-                            messageRef.get().addOnSuccessListener { messageSnapshot ->
-                                val message = messageSnapshot.toObject(Message::class.java)
-                                message?.let {
-                                    messages.add(message)
-                                }
+                        val conversationId = conversationRef.id
+                        val participants = mutableListOf<String>()
+                        conversationRef.get().addOnSuccessListener { conversationDocument ->
+                            val participantsList = conversationDocument.get("participants") as? List<String>
+                            val messageIds = conversationDocument.get("messageIds") as? List<String>
+                            participantsList?.let { participants.addAll(it) }
 
-                                val lastMessage = messages.lastOrNull()?.message
-                                val lastMessageSender = messages.lastOrNull()?.senderId
+                            val status = conversationDocument.getString("status")
 
-                                val conversation = Conversation(
-                                    conversationId = conversationId,
-                                    status = status,
-                                    participants = participants,
-                                    messages = messages,
-                                    lastMessage = lastMessage,
-                                    lastMessageSender = lastMessageSender,
-                                    lastMessageTime = lastMessageTimestamp
-                                )
+                            val conversation = Conversation(
+                                conversationId = conversationId,
+                                status = status,
+                                participants = participants,
+                                messageIds = messageIds
 
-                                val existingConversation = conversationList.find { it.conversationId == conversationId }
-                                if (existingConversation == null) {
-                                    conversationList.add(conversation)
-                                } else {
-                                    conversationList[conversationList.indexOf(existingConversation)] = conversation
-                                }
+                            )
+                            Log.d(TAG, "CONV ID: $conversationId, $messageIds ")
 
-                                conversationsAdapter.notifyDataSetChanged()
-                            }.addOnFailureListener { exception ->
-                                Log.e(TAG, "Error fetching message", exception)
+
+                            val existingConversation = conversationList.find { it.conversationId == conversationId }
+                            if (existingConversation == null) {
+                                conversationList.add(conversation)
+                            } else {
+                                conversationList[conversationList.indexOf(existingConversation)] = conversation
                             }
+
+                            fetchMessagesForConversation(conversation)
+                            Log.d(TAG, "CONV ID: $conversationId, ${conversation.messages} ")
+
+                            conversationsAdapter.notifyDataSetChanged()
+                        }.addOnFailureListener { exception ->
+                            Log.e(TAG, "Error fetching conversation details", exception)
                         }
                     }
                 }
-            }
         }
     }
 
+    private fun fetchMessagesForConversation(conversation: Conversation) {
+        val messages = mutableListOf<Message>()
+
+        conversation.messageIds?.forEach { messageId ->
+            Log.d(TAG, "mess ID: $messageId ")
+            firestore.collection("Messages").document(messageId)
+                .get()
+                .addOnSuccessListener { messageDocument ->
+                    val message = messageDocument.toObject(Message::class.java)
+                    message?.let {
+                        messages.add(it)
+                    }
+
+                    if (messages.size == conversation.messageIds?.size) {
+                        conversation.messages = messages.sortedBy { it.timestamp }
+                        conversationsAdapter.notifyDataSetChanged()
+                    }
+
+
+
+                }
+                .addOnFailureListener { exception ->
+                    Log.e(TAG, "Error fetching message", exception)
+                }
+
+        }
+
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -2,23 +2,26 @@ package com.example.firstapp.ui.conversations.single
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentConversationsSoloBinding
 import com.example.firstapp.ui.data.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.bumptech.glide.Glide
+import com.example.firstapp.ui.data.Conversation
+import com.example.firstapp.ui.data.Message
+import com.google.android.material.textfield.TextInputEditText
 
 class SingleConversationFragment : Fragment() {
     private var savedNavBarColor: Int = 0
@@ -28,7 +31,7 @@ class SingleConversationFragment : Fragment() {
 
     private val viewModel: SingleConversationViewModel by viewModels()
 
-    private lateinit var messageAdapter: MessageAdapter
+    private lateinit var messageAdapter: SingleConversationAdapter
 
     private lateinit var bottomNavView: BottomNavigationView
 
@@ -60,10 +63,15 @@ class SingleConversationFragment : Fragment() {
         val conversationId = requireArguments().getString("conversationId")
 
         conversationId?.let {
-            viewModel.loadMessages(it)
+            loadMessages(it)
             loadFriendData(it)
         }
-
+        viewModel.messages.observe(viewLifecycleOwner, Observer { messages ->
+            messages?.let {
+                Log.d(TAG, "Messages: $messages")
+                messageAdapter.submitList(it)
+            }
+        })
         view.findViewById<ImageButton>(R.id.back_button).setOnClickListener {
             findNavController().popBackStack()
         }
@@ -73,15 +81,63 @@ class SingleConversationFragment : Fragment() {
                 messageAdapter.submitList(it)
             }
         })
+
+        val textEditTextMessage: TextInputEditText = binding.textEditTextMessage
+
+        textEditTextMessage.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.recyclerView.post {
+                    binding.recyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
+                }
+            }
+        }
+
     }
 
     private fun setupRecyclerView() {
-        messageAdapter = MessageAdapter()
+        messageAdapter = SingleConversationAdapter()
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = messageAdapter
         }
     }
+
+    private fun loadMessages(conversationId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+
+        val messages = mutableListOf<Message>()
+
+        firestore.collection("Conversations").document(conversationId)
+            .get()
+            .addOnSuccessListener { conversationDocument ->
+                val conversation = conversationDocument.toObject(Conversation::class.java)
+                conversation?.let {
+                    it.messageIds?.forEach { messageId ->
+                        firestore.collection("Messages").document(messageId)
+                            .get()
+                            .addOnSuccessListener { messageDocument ->
+                                val message = messageDocument.toObject(Message::class.java)
+                                message?.let {
+                                    messages.add(it)
+                                }
+
+                                if (messages.size == conversation.messageIds?.size) {
+                                    val sortedMessages = messages.sortedBy { it.timestamp }
+
+                                    viewModel.setMessages(sortedMessages)
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e(TAG, "Error fetching message", exception)
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Error fetching conversation", exception)
+            }
+    }
+
 
     private fun loadFriendData(conversationId: String) {
         val firestore = FirebaseFirestore.getInstance()
@@ -101,11 +157,9 @@ class SingleConversationFragment : Fragment() {
                             friend?.let { user ->
                                 binding.textViewFriendsUsername.text = user.username
                                 binding.textViewFriendsUsernameCode.text = "#${user.usernameCode}"
-
                                 Glide.with(requireContext())
                                     .load(user.profileImageUrl)
                                     .into(binding.imageViewFriendsImage)
-
                             }
                         }
                 }
@@ -118,5 +172,9 @@ class SingleConversationFragment : Fragment() {
         requireActivity().window.navigationBarColor = savedNavBarColor
 
         _binding = null
+    }
+
+    companion object {
+        private const val TAG = "SingleConversationFragment"
     }
 }
