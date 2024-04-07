@@ -14,44 +14,35 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentConversationsSoloBinding
-import com.example.firstapp.ui.data.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.bumptech.glide.Glide
-import com.example.firstapp.ui.data.Conversation
+import com.example.firstapp.ui.data.User
 import com.example.firstapp.ui.data.Message
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.Timestamp
 
 class SingleConversationFragment : Fragment() {
     private var savedNavBarColor: Int = 0
-
     private var _binding: FragmentConversationsSoloBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: SingleConversationViewModel by viewModels()
-
     private lateinit var messageAdapter: SingleConversationAdapter
-
     private lateinit var bottomNavView: BottomNavigationView
+    private val auth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentConversationsSoloBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
         setupRecyclerView()
-
         return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         savedNavBarColor = requireActivity().window.navigationBarColor
-
         if (Build.VERSION.SDK_INT >= 21) {
             requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
         }
@@ -63,25 +54,44 @@ class SingleConversationFragment : Fragment() {
         val conversationId = requireArguments().getString("conversationId")
 
         conversationId?.let {
-            loadMessages(it)
+            viewModel.loadMessages(it)
             loadFriendData(it)
         }
-        viewModel.messages.observe(viewLifecycleOwner, Observer { messages ->
-            messages?.let {
-                Log.d(TAG, "Messages: $messages")
-                messageAdapter.submitList(it)
-            }
-        })
+
+
+
         view.findViewById<ImageButton>(R.id.back_button).setOnClickListener {
             findNavController().popBackStack()
         }
 
+
+        val sendMessageButton: ImageButton = view.findViewById(R.id.imageButtonSendMessage)
+        sendMessageButton.setOnClickListener {
+            val messageText: String = binding.textEditTextMessage.text.toString().trim()
+            if (messageText.isNotEmpty()) {
+                val currentTime = Timestamp.now()
+                val messageId = firestore.collection("Messages").document().id
+
+                val message = Message(
+                    messageId,
+                    messageText,
+                    auth.currentUser?.uid ?: "",
+                    currentTime
+                )
+
+                conversationId?.let { it1 -> viewModel.sendMessage(message, it1) }
+                binding.textEditTextMessage.setText("")
+            }
+        }
+
         viewModel.messages.observe(viewLifecycleOwner, Observer { messages ->
             messages?.let {
                 messageAdapter.submitList(it)
+                binding.recyclerView.post {
+                    binding.recyclerView.scrollToPosition(it.size - 1)
+                }
             }
         })
-
         val textEditTextMessage: TextInputEditText = binding.textEditTextMessage
 
         textEditTextMessage.setOnFocusChangeListener { _, hasFocus ->
@@ -91,7 +101,6 @@ class SingleConversationFragment : Fragment() {
                 }
             }
         }
-
     }
 
     private fun setupRecyclerView() {
@@ -102,47 +111,7 @@ class SingleConversationFragment : Fragment() {
         }
     }
 
-    private fun loadMessages(conversationId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-
-        val messages = mutableListOf<Message>()
-
-        firestore.collection("Conversations").document(conversationId)
-            .get()
-            .addOnSuccessListener { conversationDocument ->
-                val conversation = conversationDocument.toObject(Conversation::class.java)
-                conversation?.let {
-                    it.messageIds?.forEach { messageId ->
-                        firestore.collection("Messages").document(messageId)
-                            .get()
-                            .addOnSuccessListener { messageDocument ->
-                                val message = messageDocument.toObject(Message::class.java)
-                                message?.let {
-                                    messages.add(it)
-                                }
-
-                                if (messages.size == conversation.messageIds?.size) {
-                                    val sortedMessages = messages.sortedBy { it.timestamp }
-
-                                    viewModel.setMessages(sortedMessages)
-                                }
-                            }
-                            .addOnFailureListener { exception ->
-                                Log.e(TAG, "Error fetching message", exception)
-                            }
-                    }
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.e(TAG, "Error fetching conversation", exception)
-            }
-    }
-
-
     private fun loadFriendData(conversationId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        val auth = FirebaseAuth.getInstance()
-
         firestore.collection("Conversations").document(conversationId)
             .get()
             .addOnSuccessListener { documentSnapshot ->
@@ -170,7 +139,6 @@ class SingleConversationFragment : Fragment() {
         super.onDestroyView()
         bottomNavView.visibility = View.VISIBLE
         requireActivity().window.navigationBarColor = savedNavBarColor
-
         _binding = null
     }
 

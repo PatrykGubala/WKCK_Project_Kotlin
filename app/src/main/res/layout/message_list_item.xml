@@ -10,8 +10,8 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardViewProfileAvatar"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="8dp"
@@ -45,7 +45,7 @@
         android:layout_toEndOf="@+id/cardViewProfileAvatar"
         android:text="Username"
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:textStyle="bold" />
 
 
@@ -59,8 +59,7 @@
         android:layout_toEndOf="@+id/username"
         android:text="#xxxx"
         android:textColor="@color/grey"
-        android:textSize="14sp"
-         />
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/message"
@@ -83,8 +82,8 @@
         android:layout_alignTop="@+id/usernameCode"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="16dp"
         android:layout_toEndOf="@+id/usernameCode"
         android:text="7/09/2024 o 5:23"
         android:textColor="@color/grey"
