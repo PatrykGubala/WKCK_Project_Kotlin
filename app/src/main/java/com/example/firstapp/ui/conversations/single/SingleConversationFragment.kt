@@ -1,12 +1,17 @@
 package com.example.firstapp.ui.conversations.single
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -22,6 +27,7 @@ import com.example.firstapp.ui.data.User
 import com.example.firstapp.ui.data.Message
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.Timestamp
+import com.google.firebase.storage.FirebaseStorage
 
 class SingleConversationFragment : Fragment() {
     private var savedNavBarColor: Int = 0
@@ -57,13 +63,12 @@ class SingleConversationFragment : Fragment() {
             viewModel.loadMessages(it)
             loadFriendData(it)
         }
-
-
-
+        view.findViewById<ImageButton>(R.id.imageButtonPlus).setOnClickListener {
+            selectImageFromGallery()
+        }
         view.findViewById<ImageButton>(R.id.back_button).setOnClickListener {
             findNavController().popBackStack()
         }
-
 
         val sendMessageButton: ImageButton = view.findViewById(R.id.imageButtonSendMessage)
         sendMessageButton.setOnClickListener {
@@ -132,6 +137,35 @@ class SingleConversationFragment : Fragment() {
                             }
                         }
                 }
+            }
+    }
+    private val pickImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            val imageUri = data?.data
+            val messageId = "123"
+            imageUri?.let { uploadImageToFirebaseStorage(it, messageId) }
+        }
+    }
+    private fun selectImageFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        pickImage.launch(intent)
+    }
+    private fun uploadImageToFirebaseStorage(imageUri: Uri, messageId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        val storageRef = FirebaseStorage.getInstance().reference
+        val imageRef = storageRef.child("images/$userId/messages/$messageId.png")
+
+        imageRef.putFile(imageUri)
+            .addOnSuccessListener { uploadTask ->
+                uploadTask.storage.downloadUrl.addOnSuccessListener { uri ->
+                    val imageUrl = uri.toString()
+                }.addOnFailureListener { e ->
+                    Log.e(TAG, "Error getting download URL", e)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error uploading image", e)
             }
     }
 

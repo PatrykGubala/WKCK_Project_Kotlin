@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterInside
 import com.example.firstapp.R
 import com.example.firstapp.ui.data.Message
 import com.example.firstapp.ui.data.User
@@ -37,6 +38,7 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         private val senderCodeTextView: TextView = itemView.findViewById(R.id.usernameCode)
         private val timeAgoTextView: TextView = itemView.findViewById(R.id.timeAgo)
         private val userImageView: ImageView = itemView.findViewById(R.id.userImage)
+        private val messageImage: ImageView = itemView.findViewById(R.id.imageMessage)
 
         fun bind(message: Message) {
             messageTextView.text = message.message
@@ -52,6 +54,19 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
                         senderCodeTextView.text = "#${user.usernameCode}"
                     }
                 }
+            }
+
+            if (message.messageImageUrl != null && message.messageImageUrl.isNotBlank()) {
+                messageImage.visibility = View.VISIBLE
+                Glide.with(itemView.context)
+                    .load(message.messageImageUrl)
+                    .transform(
+                        CenterInside(),
+                        CustomTransformation()
+                    )
+                    .into(messageImage)
+            } else {
+                messageImage.visibility = View.GONE
             }
         }
 

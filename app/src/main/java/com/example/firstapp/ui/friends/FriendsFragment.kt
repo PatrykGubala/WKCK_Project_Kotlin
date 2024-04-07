@@ -75,8 +75,7 @@ class FriendsFragment : Fragment() {
         userId?.let { currentUserId ->
             val currentUserFriendConversationRef = firestore.collection("Conversations")
                 .whereEqualTo("participants", listOf(currentUserId, friend.userId))
-
-            currentUserFriendConversationRef.get()
+                .get()
                 .addOnSuccessListener { querySnapshot ->
                     if (!querySnapshot.isEmpty) {
                         val existingConversationId = querySnapshot.documents[0].id
@@ -84,11 +83,26 @@ class FriendsFragment : Fragment() {
                             .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
                         findNavController().navigate(action)
                     } else {
-                        createNewConversation(friend)
+                        firestore.collection("Conversations")
+                            .whereEqualTo("participants", listOf(friend.userId, currentUserId))
+                            .get()
+                            .addOnSuccessListener { secondQuerySnapshot ->
+                                if (!secondQuerySnapshot.isEmpty) {
+                                    val existingConversationId = secondQuerySnapshot.documents[0].id
+                                    val action = FriendsFragmentDirections
+                                        .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
+                                    findNavController().navigate(action)
+                                } else {
+                                    createNewConversation(friend)
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e("FriendsFragment", "Error fetching conversations", exception)
+                            }
                     }
                 }
                 .addOnFailureListener { exception ->
-                    Log.e("FriendsFragment", "Error checking conversation existence", exception)
+                    Log.e("FriendsFragment", "Error fetching conversations", exception)
                 }
         }
     }
@@ -103,12 +117,10 @@ class FriendsFragment : Fragment() {
             val conversationRef = firestore.collection("Conversations").document(conversationId)
 
             val conversationData = hashMapOf(
+                "conversationId" to conversationId,
                 "status" to "solo",
                 "participants" to listOf(currentUserId, friend.userId),
-                "messages" to listOf<Message>(),
-                "lastMessage" to null,
-                "lastMessageSender" to null,
-                "lastMessageTimestamp" to null
+                "messageIds" to listOf<Message>(),
             )
 
             conversationRef.set(conversationData)

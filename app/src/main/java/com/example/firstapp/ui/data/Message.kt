@@ -6,5 +6,6 @@ data class Message(
     val messageId:String? = null,
     val message: String? = null,
     val senderId: String? = null,
-    val timestamp: Timestamp? = null
+    val timestamp: Timestamp? = null,
+    val messageImageUrl: String? = null
 )
