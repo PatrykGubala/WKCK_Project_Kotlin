@@ -36,7 +36,7 @@ class SingleConversationViewModel : ViewModel() {
                     return@addSnapshotListener
                 }
 
-                val batchSize = 20
+                val batchSize = 15
                 val numBatches = (messageIds.size + batchSize - 1) / batchSize
 
                 val messages = mutableListOf<Message>()

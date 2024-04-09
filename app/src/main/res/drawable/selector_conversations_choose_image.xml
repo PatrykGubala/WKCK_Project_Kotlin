@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/small_plus"  android:state_selected="false"/>
+    <item android:drawable="@drawable/x"  android:state_selected="true"/>
+</selector>

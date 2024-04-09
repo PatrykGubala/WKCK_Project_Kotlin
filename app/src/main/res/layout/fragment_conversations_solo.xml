@@ -144,7 +144,7 @@
             android:background="@drawable/search_bar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/small_plus" />
+            app:srcCompat="@drawable/selector_conversations_choose_image" />
 
         <ImageButton
             android:id="@+id/imageButtonMicrophone"

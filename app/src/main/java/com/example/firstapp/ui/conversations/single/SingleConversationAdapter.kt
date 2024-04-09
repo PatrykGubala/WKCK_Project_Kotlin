@@ -1,6 +1,5 @@
 package com.example.firstapp.ui.conversations.single
 
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +15,7 @@ import com.example.firstapp.ui.data.Message
 import com.example.firstapp.ui.data.User
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.Calendar
 import java.util.Locale
 
 class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter.MessageViewHolder>(DiffCallback) {
@@ -71,20 +70,31 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         }
 
         private fun getRelativeTimeAgo(timestamp: Long): String {
-            val now = System.currentTimeMillis()
-            val diff = now - timestamp
+            val messageCalendar = Calendar.getInstance().apply {
+                timeInMillis = timestamp
+            }
+            val currentCalendar = Calendar.getInstance()
 
-            val seconds = diff / 1000
-            val minutes = seconds / 60
-            val hours = minutes / 60
-            val days = hours / 24
-
-            return when {
-                days == 0L -> "Dziś o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(timestamp))}"
-                days == 1L -> "Wczoraj o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(timestamp))}"
-                else -> SimpleDateFormat("dd/MM/yyyy 'o' HH:mm", Locale.getDefault()).format(Date(timestamp))
+            return if (isSameDay(messageCalendar, currentCalendar)) {
+                "Dziś o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
+            } else if (isYesterday(messageCalendar, currentCalendar)) {
+                "Wczoraj o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
+            } else {
+                SimpleDateFormat("dd/MM/yyyy 'o' HH:mm", Locale.getDefault()).format(messageCalendar.time)
             }
         }
+
+        private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
+            return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                    cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+        }
+
+        private fun isYesterday(cal1: Calendar, cal2: Calendar): Boolean {
+            cal2.add(Calendar.DAY_OF_YEAR, -1)
+            return isSameDay(cal1, cal2)
+        }
+
+
     }
 
     private fun getUserDetails(userId: String, callback: (User?) -> Unit) {

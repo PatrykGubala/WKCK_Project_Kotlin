@@ -53,20 +53,20 @@ class RegisterFragment : BaseFragment() {
 
 
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(requireContext(), "Invalid email format", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Niepoprawny format e-mail", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (password.length < 6) {
-                Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Hasło musi mieć conajmniej 6 znaków", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (password != repeatedPassword) {
-                Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Hasła nie są takie same", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             checkEmailUnique(email) { isUnique ->
                 if (!isUnique) {
-                    Toast.makeText(requireContext(), "Email is already in use", Toast.LENGTH_SHORT)
+                    Toast.makeText(requireContext(), "Email już jest w użyciu", Toast.LENGTH_SHORT)
                         .show()
                     return@checkEmailUnique
                 }
@@ -92,7 +92,7 @@ class RegisterFragment : BaseFragment() {
                                 .set(user)
                                 .addOnSuccessListener {
                                     Log.d(TAG, "User details saved in Firestore")
-                                    Toast.makeText(requireContext(), "Account created successfully", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireContext(), "Konto zostało utworzone", Toast.LENGTH_SHORT).show()
                                     auth.signInWithEmailAndPassword(email, password)
                                         .addOnSuccessListener { authRes ->
                                             startApp()
@@ -100,12 +100,12 @@ class RegisterFragment : BaseFragment() {
                                 }
                                 .addOnFailureListener { e ->
                                     Log.w(TAG, "Error adding user details to Firestore", e)
-                                    Toast.makeText(requireContext(), "Failed to create account", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireContext(), "Nie udalo się stworzyć konta", Toast.LENGTH_SHORT).show()
                                 }
                         }
                     } else {
                         Log.w(TAG, "createUserWithEmailAndPassword:failure", task.exception)
-                        Toast.makeText(requireContext(), "Authentication failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Autentykacja się nie powiodła", Toast.LENGTH_SHORT).show()
                     }
                 }
 
