@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+
 class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter.MessageViewHolder>(DiffCallback) {
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -93,8 +94,6 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
             cal2.add(Calendar.DAY_OF_YEAR, -1)
             return isSameDay(cal1, cal2)
         }
-
-
     }
 
     private fun getUserDetails(userId: String, callback: (User?) -> Unit) {
@@ -121,3 +120,4 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         }
     }
 }
+

@@ -36,10 +36,14 @@ class SingleConversationViewModel : ViewModel() {
                     return@addSnapshotListener
                 }
 
-                val batchSize = 15
+                val batchSize = 30
                 val numBatches = (messageIds.size + batchSize - 1) / batchSize
 
-                val messages = mutableListOf<Message>()
+                // Create a list to store messages
+                val messagesList = mutableListOf<Message>()
+
+                // Notify observers that loading has started
+                _loading.postValue(true)
 
                 for (i in 0 until numBatches) {
                     val startIndex = i * batchSize
@@ -55,12 +59,14 @@ class SingleConversationViewModel : ViewModel() {
                             for (doc in messagesSnapshot.documents) {
                                 val message = doc.toObject(Message::class.java)
                                 message?.let {
-                                    messages.add(it)
+                                    messagesList.add(it)
                                 }
                             }
 
                             if (i == numBatches - 1) {
-                                _messages.postValue(messages)
+                                // Update the LiveData with the list of messages
+                                _messages.postValue(messagesList)
+                                // Notify observers that loading has finished
                                 _loading.postValue(false)
                             }
                         }
@@ -71,6 +77,9 @@ class SingleConversationViewModel : ViewModel() {
                 }
             }
     }
+
+
+
 
     fun sendMessage(message: Message, conversationId: String) {
         val messageRef = firestore.collection("Messages").document()

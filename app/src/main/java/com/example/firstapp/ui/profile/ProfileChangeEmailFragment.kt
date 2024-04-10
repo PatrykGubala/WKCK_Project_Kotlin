@@ -1,6 +1,7 @@
 package com.example.firstapp.ui.profile
 
 import android.content.ContentValues.TAG
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.firstapp.R
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +20,8 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ProfileChangeEmailFragment : Fragment() {
+    private var savedNavBarColor: Int = 0
+    private lateinit var bottomNavView: BottomNavigationView
 
     private lateinit var auth: FirebaseAuth
     private lateinit var currentUser: FirebaseUser
@@ -50,7 +54,19 @@ class ProfileChangeEmailFragment : Fragment() {
         return view
     }
 
-    private fun handleChangeEmail() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        savedNavBarColor = requireActivity().window.navigationBarColor
+        if (Build.VERSION.SDK_INT >= 21) {
+            requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
+        }
+        bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
+        if (bottomNavView.visibility != View.GONE) {
+            bottomNavView.visibility = View.GONE
+        }
+
+    }
+
+        private fun handleChangeEmail() {
         val currentEmail = currentEmailLayout.editText?.text.toString().trim()
         val newEmail = newEmailLayout.editText?.text.toString().trim()
         val password = passwordLayout.editText?.text.toString()
@@ -81,6 +97,11 @@ class ProfileChangeEmailFragment : Fragment() {
         } else {
             Log.e(TAG, "User is null")
         }
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bottomNavView.visibility = View.VISIBLE
+        requireActivity().window.navigationBarColor = savedNavBarColor
     }
 
 }

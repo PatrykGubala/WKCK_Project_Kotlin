@@ -1,5 +1,6 @@
 package com.example.firstapp.ui.profile
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,11 +12,14 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.firstapp.R
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 
 class ProfileChangePasswordFragment : Fragment() {
+    private var savedNavBarColor: Int = 0
+    private lateinit var bottomNavView: BottomNavigationView
 
     private lateinit var auth: FirebaseAuth
 
@@ -40,6 +44,18 @@ class ProfileChangePasswordFragment : Fragment() {
             findNavController().popBackStack()
         }
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        savedNavBarColor = requireActivity().window.navigationBarColor
+        if (Build.VERSION.SDK_INT >= 21) {
+            requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
+        }
+        bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
+        if (bottomNavView.visibility != View.GONE) {
+            bottomNavView.visibility = View.GONE
+        }
+
     }
 
     private fun handleChangePassword() {
@@ -78,7 +94,11 @@ class ProfileChangePasswordFragment : Fragment() {
             Log.e(TAG, "User is null")
         }
     }
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bottomNavView.visibility = View.VISIBLE
+        requireActivity().window.navigationBarColor = savedNavBarColor
+    }
     companion object {
         private const val TAG = "ProfileChangePasswordFragment"
     }

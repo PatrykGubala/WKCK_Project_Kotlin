@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstapp.databinding.FragmentConversationsBinding
 import com.example.firstapp.ui.data.Conversation
 import com.example.firstapp.ui.data.Message
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentReference
@@ -125,11 +126,17 @@ class ConversationsFragment : Fragment() {
         val messages = mutableListOf<Message>()
 
         conversation.messageIds?.forEach { messageId ->
-            Log.d(TAG, "mess ID: $messageId ")
             firestore.collection("Messages").document(messageId)
                 .get()
                 .addOnSuccessListener { messageDocument ->
-                    val message = messageDocument.toObject(Message::class.java)
+                    val messageData = messageDocument.data
+                    val message = Message(
+                        message = messageData?.get("message") as? String,
+                        messageId = messageDocument.id,
+                        senderId = messageData?.get("senderId") as? String,
+                        timestamp = messageData?.get("timestamp") as? Timestamp,
+                        messageImageUrl = messageData?.get("messageImageUrl") as? String
+                    )
                     message?.let {
                         messages.add(it)
                     }
@@ -138,17 +145,13 @@ class ConversationsFragment : Fragment() {
                         conversation.messages = messages.sortedBy { it.timestamp }
                         conversationsAdapter.notifyDataSetChanged()
                     }
-
-
-
                 }
                 .addOnFailureListener { exception ->
                     Log.e(TAG, "Error fetching message", exception)
                 }
-
         }
-
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

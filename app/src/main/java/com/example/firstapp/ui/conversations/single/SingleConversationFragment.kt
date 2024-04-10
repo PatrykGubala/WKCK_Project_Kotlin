@@ -31,11 +31,12 @@ import com.google.firebase.storage.FirebaseStorage
 
 class SingleConversationFragment : Fragment() {
     private var savedNavBarColor: Int = 0
+    private lateinit var bottomNavView: BottomNavigationView
+
     private var _binding: FragmentConversationsSoloBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SingleConversationViewModel by viewModels()
     private lateinit var messageAdapter: SingleConversationAdapter
-    private lateinit var bottomNavView: BottomNavigationView
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -190,8 +191,8 @@ class SingleConversationFragment : Fragment() {
         uploadImageToFirebaseStorage(imageUri, messageId) { imageUrl ->
             val currentTime = Timestamp.now()
             val message = Message(
-                messageId,
                 message = "" ,
+                messageId,
                 senderId = auth.currentUser?.uid ?: "",
                 timestamp = currentTime,
                 messageImageUrl = imageUrl

@@ -1,6 +1,7 @@
 package com.example.firstapp.ui.conversations
 
 import android.text.format.DateUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,30 +15,35 @@ import com.example.firstapp.ui.data.Conversation
 import com.example.firstapp.ui.data.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 class ConversationsAdapter(private val conversations: List<Conversation>) :
     RecyclerView.Adapter<ConversationsAdapter.ConversationViewHolder>() {
 
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
-    private val currentUserId = auth.currentUser?.uid
-
     inner class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val username: TextView = itemView.findViewById(R.id.username)
-        val messageText: TextView = itemView.findViewById(R.id.message)
-        val timeAgo: TextView = itemView.findViewById(R.id.timeAgo)
-        val conversationImage: ImageView = itemView.findViewById(R.id.userImage)
+        private val username: TextView = itemView.findViewById(R.id.username)
+        private val messageText: TextView = itemView.findViewById(R.id.message)
+        private val timeAgo: TextView = itemView.findViewById(R.id.timeAgo)
+        private val conversationImage: ImageView = itemView.findViewById(R.id.userImage)
 
-        fun bind(conversation: Conversation) {
+        init {
             itemView.setOnClickListener {
-                val action = ConversationsFragmentDirections.actionMessagesFragmentToSingleConversationFragment(conversationId = conversation.conversationId ?: "")
+                val action = ConversationsFragmentDirections.actionMessagesFragmentToSingleConversationFragment(conversationId = conversations[adapterPosition].conversationId ?: "")
                 it.findNavController().navigate(action)
             }
+        }
 
-            val lastMessage = conversation.messages?.lastOrNull()
-            messageText.text = lastMessage?.message
-            timeAgo.text = getRelativeTimeAgo(lastMessage?.timestamp?.toDate()?.time ?: 0)
+        fun bind(conversation: Conversation) {
+            Log.d("Costam", conversation.messageIds.toString())
+
+            conversation.messages?.let { messages ->
+                val lastMessage = messages.lastOrNull()
+                messageText.text = lastMessage?.message
+                timeAgo.text = getRelativeTimeAgo(lastMessage?.timestamp?.toDate()?.time ?: 0)
+            }
 
             if (conversation.status == "solo" && conversation.participants != null) {
                 val otherParticipantId = conversation.participants.find { it != currentUserId }
@@ -79,6 +85,10 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
     override fun getItemCount(): Int {
         return conversations.size
     }
+
+    private val firestore = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private val currentUserId = auth.currentUser?.uid
 
     private fun getUserDetails(userId: String, callback: (User?) -> Unit) {
         firestore.collection("Users").document(userId)
