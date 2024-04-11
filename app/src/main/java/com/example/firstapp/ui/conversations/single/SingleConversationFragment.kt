@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -89,10 +90,10 @@ class SingleConversationFragment : Fragment() {
                     val messageId = firestore.collection("Messages").document().id
 
                     val message = Message(
-                        messageId,
-                        messageText,
-                        auth.currentUser?.uid ?: "",
-                        currentTime,
+                        messageId = messageId,
+                        message = messageText,
+                        senderId = auth.currentUser?.uid ?: "",
+                        timestamp = currentTime,
                         messageImageUrl = null
                     )
 
@@ -101,27 +102,45 @@ class SingleConversationFragment : Fragment() {
                 }
             }
         }
-
         viewModel.messages.observe(viewLifecycleOwner, Observer { messages ->
             messages?.let {
                 messageAdapter.submitList(it)
-                binding.recyclerView.post {
-                    binding.recyclerView.scrollToPosition(it.size - 1)
+                if (it.isNotEmpty()) {
+                    binding.recyclerView.doOnLayout {
+                        val totalHeight = calculateTotalItemsHeight()
+                        binding.recyclerView.smoothScrollBy(0, totalHeight)
+                    }
                 }
             }
         })
+
+
+
         val textEditTextMessage: TextInputEditText = binding.textEditTextMessage
 
         textEditTextMessage.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                binding.recyclerView.post {
-                    binding.recyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
+                messageAdapter?.let { adapter ->
+                    if (adapter.itemCount > 0) {
+                        binding.recyclerView.post {
+                            binding.recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
+                        }
+                    }
                 }
             }
         }
     }
 
-
+    private fun calculateTotalItemsHeight(): Int {
+        var totalHeight = 0
+        for (i in 0 until messageAdapter.itemCount) {
+            val itemView = binding.recyclerView.layoutManager?.findViewByPosition(i)
+            itemView?.let {
+                totalHeight += it.height
+            }
+        }
+        return totalHeight
+    }
     private fun setupRecyclerView() {
         messageAdapter = SingleConversationAdapter()
         binding.recyclerView.apply {

@@ -30,6 +30,13 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val message = getItem(position)
         holder.bind(message)
+
+        if (position == itemCount - 1) {
+            holder.itemView.post {
+                holder.itemView.requestLayout()
+                holder.itemView.invalidate()
+            }
+        }
     }
 
     inner class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -64,6 +71,7 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
                         CenterInside(),
                         CustomTransformation()
                     )
+
                     .into(messageImage)
             } else {
                 messageImage.visibility = View.GONE

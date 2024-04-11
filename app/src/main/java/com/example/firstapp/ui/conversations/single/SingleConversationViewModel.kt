@@ -39,10 +39,8 @@ class SingleConversationViewModel : ViewModel() {
                 val batchSize = 30
                 val numBatches = (messageIds.size + batchSize - 1) / batchSize
 
-                // Create a list to store messages
                 val messagesList = mutableListOf<Message>()
 
-                // Notify observers that loading has started
                 _loading.postValue(true)
 
                 for (i in 0 until numBatches) {
@@ -64,9 +62,7 @@ class SingleConversationViewModel : ViewModel() {
                             }
 
                             if (i == numBatches - 1) {
-                                // Update the LiveData with the list of messages
                                 _messages.postValue(messagesList)
-                                // Notify observers that loading has finished
                                 _loading.postValue(false)
                             }
                         }
