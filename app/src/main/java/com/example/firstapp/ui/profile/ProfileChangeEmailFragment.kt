@@ -56,14 +56,11 @@ class ProfileChangeEmailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         savedNavBarColor = requireActivity().window.navigationBarColor
-        if (Build.VERSION.SDK_INT >= 21) {
-            requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
-        }
+        requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
         bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
         if (bottomNavView.visibility != View.GONE) {
             bottomNavView.visibility = View.GONE
         }
-
     }
 
         private fun handleChangeEmail() {

@@ -1,5 +1,8 @@
 package com.example.firstapp.ui.conversations.single
 
+import android.content.ContentValues.TAG
+import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +12,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.example.firstapp.R
 import com.example.firstapp.ui.data.Message
 import com.example.firstapp.ui.data.User
@@ -18,25 +24,29 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-
 class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter.MessageViewHolder>(DiffCallback) {
     private val firestore = FirebaseFirestore.getInstance()
+    private var isFirstTimeLoading = true
+    private var scrollToBottomListener: ScrollToBottomListener? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
+    fun setScrollToBottomListener(listener: ScrollToBottomListener) {
+        scrollToBottomListener = listener
+    }
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): MessageViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.message_list_item, parent, false)
         return MessageViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: MessageViewHolder,
+        position: Int,
+    ) {
         val message = getItem(position)
         holder.bind(message)
-
-        if (position == itemCount - 1) {
-            holder.itemView.post {
-                holder.itemView.requestLayout()
-                holder.itemView.invalidate()
-            }
-        }
     }
 
     inner class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -55,7 +65,7 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
                 getUserDetails(userId) { user ->
                     user?.let { userDetails ->
                         Glide.with(itemView.context)
-                            .load(userDetails.profileImageUrl)
+                            .load(userDetails.profileImageUrl).diskCacheStrategy(DiskCacheStrategy.ALL)
                             .into(userImageView)
                         senderTextView.text = user.username
                         senderCodeTextView.text = "#${user.usernameCode}"
@@ -65,23 +75,51 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
 
             if (message.messageImageUrl != null && message.messageImageUrl.isNotBlank()) {
                 messageImage.visibility = View.VISIBLE
+
                 Glide.with(itemView.context)
                     .load(message.messageImageUrl)
-                    .transform(
-                        CenterInside(),
-                        CustomTransformation()
-                    )
+                    .placeholder(R.drawable.img)
+                    .error(R.drawable.img)
+                    .override(760, 760)
+                    .listener(
+                        object : RequestListener<Drawable> {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: com.bumptech.glide.request.target.Target<Drawable>?,
+                                isFirstResource: Boolean,
+                            ): Boolean {
+                                return false
+                            }
 
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: com.bumptech.glide.request.target.Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean,
+                            ): Boolean {
+                                if (isFirstTimeLoading) {
+                                    scrollToBottomListener?.scrollToBottom()
+                                    isFirstTimeLoading = false
+                                }
+                                return false
+                            }
+                        },
+                    )
                     .into(messageImage)
+
+                Log.d(TAG, "Message height: ${itemView.height}")
             } else {
                 messageImage.visibility = View.GONE
             }
         }
 
         private fun getRelativeTimeAgo(timestamp: Long): String {
-            val messageCalendar = Calendar.getInstance().apply {
-                timeInMillis = timestamp
-            }
+            val messageCalendar =
+                Calendar.getInstance().apply {
+                    timeInMillis = timestamp
+                }
             val currentCalendar = Calendar.getInstance()
 
             return if (isSameDay(messageCalendar, currentCalendar)) {
@@ -93,18 +131,27 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
             }
         }
 
-        private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
+        private fun isSameDay(
+            cal1: Calendar,
+            cal2: Calendar,
+        ): Boolean {
             return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                    cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
         }
 
-        private fun isYesterday(cal1: Calendar, cal2: Calendar): Boolean {
+        private fun isYesterday(
+            cal1: Calendar,
+            cal2: Calendar,
+        ): Boolean {
             cal2.add(Calendar.DAY_OF_YEAR, -1)
             return isSameDay(cal1, cal2)
         }
     }
 
-    private fun getUserDetails(userId: String, callback: (User?) -> Unit) {
+    private fun getUserDetails(
+        userId: String,
+        callback: (User?) -> Unit,
+    ) {
         firestore.collection("Users").document(userId)
             .get()
             .addOnSuccessListener { documentSnapshot ->
@@ -117,15 +164,21 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
     }
 
     companion object {
-        private val DiffCallback = object : DiffUtil.ItemCallback<Message>() {
-            override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean {
-                return oldItem.messageId == newItem.messageId
-            }
+        private val DiffCallback =
+            object : DiffUtil.ItemCallback<Message>() {
+                override fun areItemsTheSame(
+                    oldItem: Message,
+                    newItem: Message,
+                ): Boolean {
+                    return oldItem.messageId == newItem.messageId
+                }
 
-            override fun areContentsTheSame(oldItem: Message, newItem: Message): Boolean {
-                return oldItem == newItem
+                override fun areContentsTheSame(
+                    oldItem: Message,
+                    newItem: Message,
+                ): Boolean {
+                    return oldItem == newItem
+                }
             }
-        }
     }
 }
-

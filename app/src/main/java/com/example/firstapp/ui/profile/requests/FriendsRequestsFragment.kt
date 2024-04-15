@@ -1,6 +1,7 @@
 package com.example.firstapp.ui.profile.requests
 
 import android.content.ContentValues.TAG
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentProfileFriendsRequestsBinding
 import com.example.firstapp.ui.data.User
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -19,6 +21,9 @@ class FriendsRequestsFragment : Fragment() {
 
     private var _binding: FragmentProfileFriendsRequestsBinding? = null
     private val binding get() = _binding!!
+
+    private var savedNavBarColor: Int = 0
+    private lateinit var bottomNavView: BottomNavigationView
 
     private lateinit var friendsRequestsAdapter: FriendsRequestsAdapter
     private val friendsRequestsList = mutableListOf<User>()
@@ -43,6 +48,14 @@ class FriendsRequestsFragment : Fragment() {
             findNavController().popBackStack(R.id.profileFragment, false)
         }
         return root
+    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        savedNavBarColor = requireActivity().window.navigationBarColor
+        requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
+        bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
+        if (bottomNavView.visibility != View.GONE) {
+            bottomNavView.visibility = View.GONE
+        }
     }
 
     private fun setupRecyclerView() {
@@ -140,5 +153,10 @@ class FriendsRequestsFragment : Fragment() {
         } else {
             Log.e(TAG, "Current user is null")
         }
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bottomNavView.visibility = View.VISIBLE
+        requireActivity().window.navigationBarColor = savedNavBarColor
     }
 }

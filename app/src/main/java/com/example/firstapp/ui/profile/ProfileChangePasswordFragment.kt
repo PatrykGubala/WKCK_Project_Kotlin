@@ -1,6 +1,5 @@
 package com.example.firstapp.ui.profile
 
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -27,8 +26,9 @@ class ProfileChangePasswordFragment : Fragment() {
     private lateinit var currentPasswordLayout: TextInputLayout
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View? {
         val view = inflater.inflate(R.layout.fragment_profile_change_password, container, false)
 
@@ -46,16 +46,16 @@ class ProfileChangePasswordFragment : Fragment() {
         return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         savedNavBarColor = requireActivity().window.navigationBarColor
-        if (Build.VERSION.SDK_INT >= 21) {
-            requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
-        }
+        requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
         bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
         if (bottomNavView.visibility != View.GONE) {
             bottomNavView.visibility = View.GONE
         }
-
     }
 
     private fun handleChangePassword() {
@@ -94,11 +94,13 @@ class ProfileChangePasswordFragment : Fragment() {
             Log.e(TAG, "User is null")
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         bottomNavView.visibility = View.VISIBLE
         requireActivity().window.navigationBarColor = savedNavBarColor
     }
+
     companion object {
         private const val TAG = "ProfileChangePasswordFragment"
     }

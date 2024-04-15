@@ -13,14 +13,20 @@ import com.example.firstapp.R
 import com.example.firstapp.ui.data.User
 
 class FriendsAdapter(private val onClickListener: (User) -> Unit) : ListAdapter<User, FriendsAdapter.FriendsViewHolder>(DiffCallback) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendsViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.friends_list_item, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): FriendsViewHolder {
+        val view =
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.friends_list_item, parent, false)
         return FriendsViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: FriendsViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: FriendsViewHolder,
+        position: Int,
+    ) {
         val friend = getItem(position)
         holder.bind(friend)
     }
@@ -44,14 +50,21 @@ class FriendsAdapter(private val onClickListener: (User) -> Unit) : ListAdapter<
     }
 
     companion object {
-        private val DiffCallback = object : DiffUtil.ItemCallback<User>() {
-            override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
-                return oldItem.userId == newItem.userId
-            }
+        private val DiffCallback =
+            object : DiffUtil.ItemCallback<User>() {
+                override fun areItemsTheSame(
+                    oldItem: User,
+                    newItem: User,
+                ): Boolean {
+                    return oldItem.userId == newItem.userId
+                }
 
-            override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
-                return oldItem == newItem
+                override fun areContentsTheSame(
+                    oldItem: User,
+                    newItem: User,
+                ): Boolean {
+                    return oldItem == newItem
+                }
             }
-        }
     }
 }

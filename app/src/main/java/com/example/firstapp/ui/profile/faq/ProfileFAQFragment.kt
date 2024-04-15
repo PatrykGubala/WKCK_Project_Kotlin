@@ -1,5 +1,6 @@
 package com.example.firstapp.ui.profile.faq
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,8 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentProfileFaqBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class ProfileFAQFragment : Fragment() {
+    private var savedNavBarColor: Int = 0
+    private lateinit var bottomNavView: BottomNavigationView
 
     private lateinit var binding: FragmentProfileFaqBinding
 
@@ -26,6 +30,12 @@ class ProfileFAQFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        savedNavBarColor = requireActivity().window.navigationBarColor
+        requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
+        bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
+        if (bottomNavView.visibility != View.GONE) {
+            bottomNavView.visibility = View.GONE
+        }
         view.findViewById<ImageButton>(R.id.back_button).setOnClickListener {
             findNavController().popBackStack()
         }
@@ -50,5 +60,11 @@ class ProfileFAQFragment : Fragment() {
 
     private fun updateExpandCollapseButtonIcon(button: ImageButton, isExpanded: Boolean) {
         button.isSelected = isExpanded
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bottomNavView.visibility = View.VISIBLE
+        requireActivity().window.navigationBarColor = savedNavBarColor
     }
 }

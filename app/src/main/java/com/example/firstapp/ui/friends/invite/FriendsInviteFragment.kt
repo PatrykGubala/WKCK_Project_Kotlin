@@ -14,6 +14,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentFriendsInviteBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
+
 class FriendsInviteFragment : Fragment() {
 
     private var _binding: FragmentFriendsInviteBinding? = null
@@ -23,6 +25,8 @@ class FriendsInviteFragment : Fragment() {
 
     private lateinit var friendsAdapter: FriendsInviteAdapter
 
+    private var savedNavBarColor: Int = 0
+    private lateinit var bottomNavView: BottomNavigationView
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -52,6 +56,13 @@ class FriendsInviteFragment : Fragment() {
             viewModel.searchFriends(searchTerm)
             Log.e("searchTerm",searchTerm)
         }
+
+        savedNavBarColor = requireActivity().window.navigationBarColor
+        requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
+        bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
+        if (bottomNavView.visibility != View.GONE) {
+            bottomNavView.visibility = View.GONE
+        }
     }
 
     private fun setupRecyclerView() {
@@ -64,6 +75,8 @@ class FriendsInviteFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        bottomNavView.visibility = View.VISIBLE
+        requireActivity().window.navigationBarColor = savedNavBarColor
         _binding = null
     }
 }

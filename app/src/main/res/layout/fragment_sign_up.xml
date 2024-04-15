@@ -65,7 +65,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView6"
         android:contextClickable="false"
-        android:focusable="false">
+        android:focusable="false"
+        android:focusableInTouchMode="false">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/textInputEditTextGeneratedUsernameCode"
@@ -80,7 +81,9 @@
             android:textColor="@color/white"
             android:textColorHighlight="@color/grey"
             android:textColorHint="@color/grey"
-            android:textColorLink="@color/grey" />
+            android:textColorLink="@color/grey"
+            android:focusable="false"
+            android:focusableInTouchMode="false"/>
     </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -109,34 +112,22 @@
     </com.google.android.material.textfield.TextInputLayout>
 
 
-    <ScrollView
+    <Button
+        android:id="@+id/signUpButton"
         android:layout_width="match_parent"
-        android:layout_height="240dp"
-        android:layout_gravity="bottom"
-        android:orientation="vertical"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="24dp"
+        android:background="@drawable/button_start_sign_up"
+        android:text="Zarejestruj się"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:backgroundTint="@color/mild_red"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayoutGeneratedUsernameCode">
-
-
-        <Button
-            android:id="@+id/signUpButton"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="108dp"
-            android:layout_marginBottom="48dp"
-            android:background="@drawable/button_start_sign_up"
-            android:text="Zarejestruj się"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            app:backgroundTint="@color/mild_red" />
-
-    </ScrollView>
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayoutGeneratedUsernameCode"
+        app:layout_constraintVertical_bias="0.763" />
 
     <TextView
         android:id="@+id/textView"

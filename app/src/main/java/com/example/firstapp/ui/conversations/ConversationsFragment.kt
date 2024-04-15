@@ -12,12 +12,10 @@ import com.example.firstapp.ui.data.Conversation
 import com.example.firstapp.ui.data.Message
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ConversationsFragment : Fragment() {
-
     private var _binding: FragmentConversationsBinding? = null
     private val binding get() = _binding!!
 
@@ -28,18 +26,43 @@ class ConversationsFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
     private val userId = auth.currentUser?.uid
 
+    private var isSoloSelected = true
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentConversationsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         setupRecyclerView()
+        setupButtonListeners()
         userId?.let { fetchConversations(it) }
 
         return root
+    }
+
+    private fun setupButtonListeners() {
+        binding.button.setOnClickListener {
+            if (!isSoloSelected) {
+                isSoloSelected = true
+                refreshConversations()
+            }
+        }
+
+        binding.button2.setOnClickListener {
+            if (isSoloSelected) {
+                isSoloSelected = false
+                refreshConversations()
+            }
+        }
+    }
+
+    private fun refreshConversations() {
+        conversationList.clear()
+        conversationsAdapter.notifyDataSetChanged()
+        userId?.let { fetchConversations(it) }
     }
 
     private fun setupRecyclerView() {
@@ -89,31 +112,32 @@ class ConversationsFragment : Fragment() {
                         conversationRef.get().addOnSuccessListener { conversationDocument ->
                             val participantsList = conversationDocument.get("participants") as? List<String>
                             val messageIds = conversationDocument.get("messageIds") as? List<String>
-                            participantsList?.let { participants.addAll(it) }
-
                             val status = conversationDocument.getString("status")
 
-                            val conversation = Conversation(
-                                conversationId = conversationId,
-                                status = status,
-                                participants = participants,
-                                messageIds = messageIds
+                            participantsList?.let { participants.addAll(it) }
 
-                            )
-                            Log.d(TAG, "CONV ID: $conversationId, $messageIds ")
+                            if (status == "solo" && isSoloSelected || status == "group" && !isSoloSelected) {
+                                val conversation =
+                                    Conversation(
+                                        conversationId = conversationId,
+                                        status = status,
+                                        participants = participants,
+                                        messageIds = messageIds,
+                                    )
+                                Log.d(TAG, "CONV ID: $conversationId, $messageIds ")
 
+                                val existingConversation = conversationList.find { it.conversationId == conversationId }
+                                if (existingConversation == null) {
+                                    conversationList.add(conversation)
+                                } else {
+                                    conversationList[conversationList.indexOf(existingConversation)] = conversation
+                                }
 
-                            val existingConversation = conversationList.find { it.conversationId == conversationId }
-                            if (existingConversation == null) {
-                                conversationList.add(conversation)
-                            } else {
-                                conversationList[conversationList.indexOf(existingConversation)] = conversation
+                                fetchMessagesForConversation(conversation)
+                                Log.d(TAG, "CONV ID: $conversationId, ${conversation.messages} ")
+
+                                conversationsAdapter.notifyDataSetChanged()
                             }
-
-                            fetchMessagesForConversation(conversation)
-                            Log.d(TAG, "CONV ID: $conversationId, ${conversation.messages} ")
-
-                            conversationsAdapter.notifyDataSetChanged()
                         }.addOnFailureListener { exception ->
                             Log.e(TAG, "Error fetching conversation details", exception)
                         }
@@ -130,13 +154,14 @@ class ConversationsFragment : Fragment() {
                 .get()
                 .addOnSuccessListener { messageDocument ->
                     val messageData = messageDocument.data
-                    val message = Message(
-                        message = messageData?.get("message") as? String,
-                        messageId = messageDocument.id,
-                        senderId = messageData?.get("senderId") as? String,
-                        timestamp = messageData?.get("timestamp") as? Timestamp,
-                        messageImageUrl = messageData?.get("messageImageUrl") as? String
-                    )
+                    val message =
+                        Message(
+                            message = messageData?.get("message") as? String,
+                            messageId = messageDocument.id,
+                            senderId = messageData?.get("senderId") as? String,
+                            timestamp = messageData?.get("timestamp") as? Timestamp,
+                            messageImageUrl = messageData?.get("messageImageUrl") as? String,
+                        )
                     message?.let {
                         messages.add(it)
                     }

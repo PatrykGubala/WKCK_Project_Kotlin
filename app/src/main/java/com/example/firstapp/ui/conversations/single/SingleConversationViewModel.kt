@@ -74,13 +74,17 @@ class SingleConversationViewModel : ViewModel() {
             }
     }
 
-
-
-
-    fun sendMessage(message: Message, conversationId: String) {
+    fun sendMessage(
+        message: Message,
+        conversationId: String,
+    ) {
         val messageRef = firestore.collection("Messages").document()
         messageRef.set(message)
             .addOnSuccessListener {
+                val updatedMessages = _messages.value?.toMutableList() ?: mutableListOf()
+                updatedMessages.add(message)
+                _messages.value = updatedMessages
+
                 firestore.collection("Conversations").document(conversationId)
                     .update("messageIds", FieldValue.arrayUnion(messageRef.id))
                     .addOnFailureListener { exception ->
