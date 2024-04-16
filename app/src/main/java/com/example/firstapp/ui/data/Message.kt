@@ -9,4 +9,5 @@ data class Message(
     val timestamp: Timestamp? = null,
     val messageImageUrl: String? = null,
     var height: Int = 0,
+    val messageRecordingUrl: String? = null,
 )

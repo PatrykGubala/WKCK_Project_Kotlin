@@ -109,9 +109,55 @@
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/cardViewProfileAvatar"
             android:visibility="visible"
-            tools:srcCompat="@tools:sample/backgrounds/scenic" />
+            />
 
     </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:id="@+id/audioPlayerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imageCardViewMessage"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_toEndOf="@+id/cardViewProfileAvatar"
+        android:background="@drawable/button_profile_logout"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        >
+
+        <ImageButton
+            android:id="@+id/playPauseButton"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/selector_conversations_play_pause_button"
+            />
+
+        <SeekBar
+            android:id="@+id/audioSeekBar"
+            android:layout_width="202dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp" />
+
+        <TextView
+            android:id="@+id/audioDurationTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+    </LinearLayout>
 
 
 

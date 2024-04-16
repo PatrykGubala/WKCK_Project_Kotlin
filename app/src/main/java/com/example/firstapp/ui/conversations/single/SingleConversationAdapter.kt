@@ -1,19 +1,19 @@
 package com.example.firstapp.ui.conversations.single
 
-import android.content.ContentValues.TAG
 import android.graphics.drawable.Drawable
+import android.media.MediaPlayer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.example.firstapp.R
@@ -26,6 +26,8 @@ import java.util.Locale
 
 class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter.MessageViewHolder>(DiffCallback) {
     private val firestore = FirebaseFirestore.getInstance()
+    private var mediaPlayer: MediaPlayer? = null
+    private var currentPlayingMessage: Message? = null
     private var isFirstTimeLoading = true
     private var scrollToBottomListener: ScrollToBottomListener? = null
 
@@ -56,23 +58,57 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         private val timeAgoTextView: TextView = itemView.findViewById(R.id.timeAgo)
         private val userImageView: ImageView = itemView.findViewById(R.id.userImage)
         private val messageImage: ImageView = itemView.findViewById(R.id.imageMessage)
+        private val audioPlayerLayout: View = itemView.findViewById(R.id.audioPlayerLayout)
+        private val playPauseButton: ImageView = itemView.findViewById(R.id.playPauseButton)
+        private val audioSeekBar: SeekBar = itemView.findViewById(R.id.audioSeekBar)
+        private val audioDurationTextView: TextView = itemView.findViewById(R.id.audioDurationTextView)
+
+        private var mediaPlayer: MediaPlayer? = null
+        private var isPlaying: Boolean = false
+
+        init {
+            playPauseButton.setOnClickListener {
+                val message = getItem(adapterPosition)
+                togglePlayPause(message)
+            }
+
+            audioSeekBar.setOnSeekBarChangeListener(
+                object : SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(
+                        seekBar: SeekBar?,
+                        progress: Int,
+                        fromUser: Boolean,
+                    ) {
+                        if (fromUser) {
+                            mediaPlayer?.seekTo(progress)
+                            updateSeekBar()
+                        }
+                    }
+
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    }
+
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    }
+                },
+            )
+        }
 
         fun bind(message: Message) {
             messageTextView.text = message.message
-
             timeAgoTextView.text = getRelativeTimeAgo(message.timestamp?.toDate()?.time ?: 0)
+
             message.senderId?.let { userId ->
                 getUserDetails(userId) { user ->
                     user?.let { userDetails ->
                         Glide.with(itemView.context)
-                            .load(userDetails.profileImageUrl).diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .load(userDetails.profileImageUrl)
                             .into(userImageView)
-                        senderTextView.text = user.username
-                        senderCodeTextView.text = "#${user.usernameCode}"
+                        senderTextView.text = userDetails.username
+                        senderCodeTextView.text = "#${userDetails.usernameCode}"
                     }
                 }
             }
-
             if (message.messageImageUrl != null && message.messageImageUrl.isNotBlank()) {
                 messageImage.visibility = View.VISIBLE
 
@@ -113,6 +149,13 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
             } else {
                 messageImage.visibility = View.GONE
             }
+
+            if (message.messageRecordingUrl != null && message.messageRecordingUrl.isNotBlank()) {
+                audioPlayerLayout.visibility = View.VISIBLE
+                setupAudioPlayer(message)
+            } else {
+                audioPlayerLayout.visibility = View.GONE
+            }
         }
 
         private fun getRelativeTimeAgo(timestamp: Long): String {
@@ -123,11 +166,11 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
             val currentCalendar = Calendar.getInstance()
 
             return if (isSameDay(messageCalendar, currentCalendar)) {
-                "Dziś o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
+                "Today at ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
             } else if (isYesterday(messageCalendar, currentCalendar)) {
-                "Wczoraj o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
+                "Yesterday at ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
             } else {
-                SimpleDateFormat("dd/MM/yyyy 'o' HH:mm", Locale.getDefault()).format(messageCalendar.time)
+                SimpleDateFormat("dd/MM/yyyy 'at' HH:mm", Locale.getDefault()).format(messageCalendar.time)
             }
         }
 
@@ -145,6 +188,89 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         ): Boolean {
             cal2.add(Calendar.DAY_OF_YEAR, -1)
             return isSameDay(cal1, cal2)
+        }
+
+        private fun setupAudioPlayer(message: Message) {
+            mediaPlayer =
+                MediaPlayer().apply {
+                    setDataSource(message.messageRecordingUrl)
+                    prepare()
+                    setOnCompletionListener {
+                        stopMediaPlayer()
+                        setupAudioPlayer(message)
+                    }
+                }
+            audioSeekBar.max = mediaPlayer?.duration ?: 0
+            audioDurationTextView.text = formatTime(mediaPlayer?.duration ?: 0)
+        }
+
+        private fun togglePlayPause(message: Message) {
+            if (currentPlayingMessage == message) {
+                if (isPlaying) {
+                    pauseMediaPlayer()
+                } else {
+                    startMediaPlayer()
+                }
+            } else {
+                stopCurrentMediaPlayer()
+                startNewMediaPlayer(message)
+            }
+        }
+
+        private fun startMediaPlayer() {
+            mediaPlayer?.start()
+            isPlaying = true
+            updateSeekBar()
+            updatePlayPauseButton()
+        }
+
+        private fun pauseMediaPlayer() {
+            mediaPlayer?.pause()
+            isPlaying = false
+            updatePlayPauseButton()
+        }
+
+        private fun stopCurrentMediaPlayer() {
+            currentPlayingMessage?.let {
+                if (it != getItem(adapterPosition)) {
+                    stopMediaPlayer()
+                }
+            }
+        }
+
+        private fun startNewMediaPlayer(message: Message) {
+            currentPlayingMessage = message
+            startMediaPlayer()
+        }
+
+        private fun stopMediaPlayer() {
+            mediaPlayer?.release()
+            mediaPlayer = null
+            isPlaying = false
+            audioSeekBar.progress = 0
+            updatePlayPauseButton()
+        }
+
+        private fun updatePlayPauseButton() {
+            val isPlaying = mediaPlayer?.isPlaying == true
+            playPauseButton.isSelected = isPlaying
+        }
+
+        private fun updateSeekBar() {
+            val mediaPlayer = mediaPlayer ?: return
+            if (mediaPlayer.isPlaying) {
+                val currentPosition = mediaPlayer.currentPosition
+                audioSeekBar.progress = currentPosition
+                audioDurationTextView.text = formatTime(currentPosition)
+                audioSeekBar.postDelayed(::updateSeekBar, 10)
+            }
+        }
+
+        private fun formatTime(ms: Int): String {
+            val totalSeconds = ms / 1000
+            val minutes = totalSeconds / 60
+            val seconds = totalSeconds % 60
+            return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
         }
     }
 
@@ -164,6 +290,8 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
     }
 
     companion object {
+        private const val TAG = "SingleConversationAdapter"
+
         private val DiffCallback =
             object : DiffUtil.ItemCallback<Message>() {
                 override fun areItemsTheSame(

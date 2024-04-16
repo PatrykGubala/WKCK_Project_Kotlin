@@ -1,0 +1,5 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/mic"  android:state_selected="false" android:state_checked="false"/>
+    <item android:drawable="@drawable/square"  android:state_selected="true" android:state_checked="false"/>
+    <item android:drawable="@drawable/x"   android:state_checked="true"/>
+</selector>

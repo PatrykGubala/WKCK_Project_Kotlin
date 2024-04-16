@@ -139,7 +139,7 @@
             android:background="@drawable/search_bar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageButtonPlus"
-            app:srcCompat="@drawable/mic" />
+            app:srcCompat="@drawable/selector_conversations_recording" />
 
         <ImageButton
             android:id="@+id/imageButtonSendMessage"

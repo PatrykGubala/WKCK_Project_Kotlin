@@ -2,6 +2,7 @@ package com.example.firstapp.ui.conversations.single
 
 import android.app.Activity
 import android.content.Intent
+import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -29,6 +30,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import java.io.File
 
 class SingleConversationFragment : Fragment(), ScrollToBottomListener {
     private var savedNavBarColor: Int = 0
@@ -43,6 +45,13 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
 
     private var isImageSelected: Boolean = false
     private var selectedImageUri: Uri? = null
+
+    private var isRecordingStarted: Boolean = false
+    private var isRecordingFinished: Boolean = false
+    private var selectedRecordingUri: Uri? = null
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var audioFilePath: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,6 +85,22 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
         view.findViewById<ImageButton>(R.id.imageButtonPlus).setOnClickListener {
             selectImageFromGallery()
         }
+
+        view.findViewById<ImageButton>(R.id.imageButtonMicrophone).setOnClickListener {
+            if (!isRecordingStarted) {
+                startRecording()
+            } else if (isRecordingFinished) {
+                selectedRecordingUri?.let { uri ->
+                    sendMessageWithRecording(uri, conversationId ?: "")
+                    isRecordingFinished = false
+                    isRecordingStarted = false
+                    selectedRecordingUri = null
+                    updateMicrophoneButtonState()
+                }
+            } else {
+                stopRecording()
+            }
+        }
         view.findViewById<ImageButton>(R.id.back_button).setOnClickListener {
             findNavController().popBackStack()
         }
@@ -87,6 +112,13 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
                     sendMessageWithImage(uri, conversationId ?: "")
                     isImageSelected = false
                     selectedImageUri = null
+                }
+            } else if (isRecordingFinished) {
+                selectedRecordingUri?.let { uri ->
+                    sendMessageWithRecording(uri, conversationId ?: "")
+                    isRecordingFinished = false
+                    isRecordingStarted = false
+                    selectedRecordingUri = null
                 }
             } else {
                 val messageText: String = binding.textEditTextMessage.text.toString().trim()
@@ -101,6 +133,7 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
                             senderId = auth.currentUser?.uid ?: "",
                             timestamp = currentTime,
                             messageImageUrl = null,
+                            messageRecordingUrl = null,
                         )
 
                     conversationId?.let { it1 -> viewModel.sendMessage(message, it1) }
@@ -230,6 +263,58 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
             }
         }
 
+    private fun startRecording() {
+        try {
+            mediaRecorder = MediaRecorder()
+            audioFilePath = requireContext().externalCacheDir?.absolutePath + "/audio_message.mp3"
+            mediaRecorder?.apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setOutputFile(audioFilePath)
+                prepare()
+                start()
+            }
+            isRecordingStarted = true
+            isRecordingFinished = false
+            updateMicrophoneButtonState()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting recording", e)
+        }
+    }
+
+    private fun stopRecording() {
+        try {
+            mediaRecorder?.apply {
+                stop()
+                reset()
+                release()
+            }
+            mediaRecorder = null
+            isRecordingStarted = false
+            isRecordingFinished = true
+            selectedRecordingUri = Uri.fromFile(File(audioFilePath))
+            updateMicrophoneButtonState()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping recording", e)
+        }
+    }
+
+    private fun updateMicrophoneButtonState() {
+        val microphoneButton: ImageButton = view?.findViewById(R.id.imageButtonMicrophone) ?: return
+        if (isRecordingStarted) {
+            microphoneButton.isSelected = true
+        } else {
+            if (isRecordingFinished) {
+                microphoneButton.isSelected = false
+                microphoneButton.setImageResource(R.drawable.x)
+            } else {
+                microphoneButton.isSelected = false
+                microphoneButton.setImageResource(R.drawable.mic)
+            }
+        }
+    }
+
     private fun selectImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         pickImage.launch(intent)
@@ -267,6 +352,7 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
                     senderId = auth.currentUser?.uid ?: "",
                     timestamp = currentTime,
                     messageImageUrl = imageUrl,
+                    messageRecordingUrl = null,
                 )
             updateImageButtonState()
             viewModel.sendMessage(message, conversationId)
@@ -288,6 +374,51 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
                     val imageUrl = uri.toString()
                     Log.d(TAG, "Image uploaded successfully. URL: $imageUrl")
                     onComplete(imageUrl)
+                }.addOnFailureListener { e ->
+                    Log.e(TAG, "Error getting download URL", e)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error uploading image", e)
+            }
+    }
+
+    private fun sendMessageWithRecording(
+        recordingUri: Uri,
+        conversationId: String,
+    ) {
+        val messageId = firestore.collection("Messages").document().id
+
+        uploadRecordingToFirebaseStorage(recordingUri, messageId) { recordingUrl ->
+            val currentTime = Timestamp.now()
+            val message =
+                Message(
+                    message = "",
+                    messageId,
+                    senderId = auth.currentUser?.uid ?: "",
+                    timestamp = currentTime,
+                    messageImageUrl = null,
+                    messageRecordingUrl = recordingUrl,
+                )
+            viewModel.sendMessage(message, conversationId)
+        }
+    }
+
+    private fun uploadRecordingToFirebaseStorage(
+        recordingUri: Uri,
+        messageId: String,
+        onComplete: (String) -> Unit,
+    ) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        val storageRef = FirebaseStorage.getInstance().reference
+        val recordingRef = storageRef.child("images/$userId/messages/$messageId.mp3")
+
+        recordingRef.putFile(recordingUri)
+            .addOnSuccessListener { uploadTask ->
+                uploadTask.storage.downloadUrl.addOnSuccessListener { uri ->
+                    val recordingUrl = uri.toString()
+                    Log.d(TAG, "Image uploaded successfully. URL: $recordingUrl")
+                    onComplete(recordingUrl)
                 }.addOnFailureListener { e ->
                     Log.e(TAG, "Error getting download URL", e)
                 }
