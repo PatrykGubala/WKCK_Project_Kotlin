@@ -14,19 +14,20 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.example.firstapp.R
 import com.example.firstapp.ui.data.Message
 import com.example.firstapp.ui.data.User
 import com.google.firebase.firestore.FirebaseFirestore
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter.MessageViewHolder>(DiffCallback) {
     private val firestore = FirebaseFirestore.getInstance()
-    private var mediaPlayer: MediaPlayer? = null
     private var currentPlayingMessage: Message? = null
     private var isFirstTimeLoading = true
     private var scrollToBottomListener: ScrollToBottomListener? = null
@@ -95,6 +96,12 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         }
 
         fun bind(message: Message) {
+            if (message.message.isNullOrEmpty()) {
+                messageTextView.visibility = View.GONE
+            } else {
+                messageTextView.visibility = View.VISIBLE
+                messageTextView.text = message.message
+            }
             messageTextView.text = message.message
             timeAgoTextView.text = getRelativeTimeAgo(message.timestamp?.toDate()?.time ?: 0)
 
@@ -114,9 +121,9 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
 
                 Glide.with(itemView.context)
                     .load(message.messageImageUrl)
+                    .override(800, 800)
                     .placeholder(R.drawable.img)
                     .error(R.drawable.img)
-                    .override(760, 760)
                     .listener(
                         object : RequestListener<Drawable> {
                             override fun onLoadFailed(
@@ -143,6 +150,7 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
                             }
                         },
                     )
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(messageImage)
 
                 Log.d(TAG, "Message height: ${itemView.height}")
@@ -166,11 +174,11 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
             val currentCalendar = Calendar.getInstance()
 
             return if (isSameDay(messageCalendar, currentCalendar)) {
-                "Today at ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
+                "Dzisiaj o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
             } else if (isYesterday(messageCalendar, currentCalendar)) {
-                "Yesterday at ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
+                "Wczoraj o ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageCalendar.time)}"
             } else {
-                SimpleDateFormat("dd/MM/yyyy 'at' HH:mm", Locale.getDefault()).format(messageCalendar.time)
+                SimpleDateFormat("dd/MM/yyyy 'o' HH:mm", Locale.getDefault()).format(messageCalendar.time)
             }
         }
 
@@ -191,17 +199,48 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         }
 
         private fun setupAudioPlayer(message: Message) {
-            mediaPlayer =
-                MediaPlayer().apply {
-                    setDataSource(message.messageRecordingUrl)
-                    prepare()
-                    setOnCompletionListener {
-                        stopMediaPlayer()
-                        setupAudioPlayer(message)
-                    }
-                }
-            audioSeekBar.max = mediaPlayer?.duration ?: 0
-            audioDurationTextView.text = formatTime(mediaPlayer?.duration ?: 0)
+            val audioUrl = message.messageRecordingUrl
+
+            Glide.with(itemView.context)
+                .downloadOnly()
+                .load(audioUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .listener(
+                    object : RequestListener<File> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: com.bumptech.glide.request.target.Target<File>?,
+                            isFirstResource: Boolean,
+                        ): Boolean {
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: File?,
+                            model: Any?,
+                            target: com.bumptech.glide.request.target.Target<File>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean,
+                        ): Boolean {
+                            resource?.let { file ->
+                                mediaPlayer =
+                                    MediaPlayer().apply {
+                                        setDataSource(file.path)
+                                        prepare()
+                                        setOnCompletionListener {
+                                            stopMediaPlayer()
+                                            setupAudioPlayer(message)
+                                        }
+                                    }
+                                audioSeekBar.max = mediaPlayer?.duration ?: 0
+                                audioDurationTextView.text = formatTime(mediaPlayer?.duration ?: 0)
+                            }
+                            return false
+                        }
+                    },
+                )
+                .submit()
         }
 
         private fun togglePlayPause(message: Message) {
@@ -239,7 +278,19 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
         }
 
         private fun startNewMediaPlayer(message: Message) {
+            stopMediaPlayer()
             currentPlayingMessage = message
+            mediaPlayer =
+                MediaPlayer().apply {
+                    setDataSource(message.messageRecordingUrl)
+                    prepare()
+                    setOnCompletionListener {
+                        stopMediaPlayer()
+                        setupAudioPlayer(message)
+                    }
+                }
+            audioSeekBar.max = mediaPlayer?.duration ?: 0
+            audioDurationTextView.text = formatTime(mediaPlayer?.duration ?: 0)
             startMediaPlayer()
         }
 

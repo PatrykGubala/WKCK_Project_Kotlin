@@ -5,13 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentSignInBinding
 import com.example.firstapp.ui.BaseFragment
 import com.example.firstapp.ui.auth.register.RegisterViewModel
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginFragment : BaseFragment() {
@@ -46,14 +46,17 @@ class LoginFragment : BaseFragment() {
             val email = binding.textInputLayoutEmail.editText?.text.toString()
             val pass = binding.textInputLayoutPassword.editText?.text.toString()
 
+            if (email.isEmpty() || pass.isEmpty()) {
+                Toast.makeText(requireContext(), "Wpisz email oraz hasło", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             fbAuth.signInWithEmailAndPassword(email, pass)
                 .addOnSuccessListener { authRes ->
                     startApp()
                 }
                 .addOnFailureListener { exc ->
-
-                    Snackbar.make(requireView(), (email == pass).toString(), Snackbar.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(requireContext(), exc.message ?: "Logowanie się nie powiodło", Toast.LENGTH_SHORT).show()
                     Log.d(LOG_DEBUG, exc.message.toString())
                 }
         }

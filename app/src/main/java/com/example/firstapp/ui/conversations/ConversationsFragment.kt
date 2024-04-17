@@ -161,6 +161,7 @@ class ConversationsFragment : Fragment() {
                             senderId = messageData?.get("senderId") as? String,
                             timestamp = messageData?.get("timestamp") as? Timestamp,
                             messageImageUrl = messageData?.get("messageImageUrl") as? String,
+                            messageRecordingUrl = messageData?.get("messageRecordingUrl") as? String,
                         )
                     message?.let {
                         messages.add(it)

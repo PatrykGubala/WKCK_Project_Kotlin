@@ -1,14 +1,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/black"
     android:clickable="true"
     android:focusable="true"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:elevation="1dp"
+    >
 
-
-    <ImageView
-        android:id="@+id/userImage"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardViewProfileAvatar"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_alignParentStart="true"
@@ -16,16 +18,39 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="8dp"
-        android:scaleType="centerCrop" />
+        app:cardCornerRadius="45dp"
+        app:circularflow_radiusInDP="360dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
+    <ImageView
+        android:id="@+id/userImage"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:scaleType="centerCrop" />
+    </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/userStatusImage"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginStart="62dp"
+        android:layout_marginTop="46dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:scaleType="centerCrop"
+        android:elevation="2dp"
+        />
     <TextView
         android:id="@+id/username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/userImage"
+        android:layout_alignTop="@id/cardViewProfileAvatar"
         android:layout_marginStart="5dp"
         android:layout_marginTop="5dp"
-        android:layout_toEndOf="@id/userImage"
+        android:layout_toEndOf="@id/cardViewProfileAvatar"
         android:text="Username"
         android:textColor="@color/white"
         android:textSize="16sp"
@@ -41,7 +66,7 @@
         android:layout_marginStart="5dp"
         android:layout_marginTop="2dp"
         android:layout_marginEnd="20dp"
-        android:layout_toEndOf="@id/userImage"
+        android:layout_toEndOf="@id/cardViewProfileAvatar"
         android:text="Message"
         android:textColor="@color/white"
         android:textSize="14sp" />

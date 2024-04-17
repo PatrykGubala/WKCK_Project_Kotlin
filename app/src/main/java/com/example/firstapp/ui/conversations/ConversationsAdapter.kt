@@ -15,23 +15,23 @@ import com.example.firstapp.ui.data.Conversation
 import com.example.firstapp.ui.data.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.*
 
 class ConversationsAdapter(private val conversations: List<Conversation>) :
     RecyclerView.Adapter<ConversationsAdapter.ConversationViewHolder>() {
-
     inner class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val username: TextView = itemView.findViewById(R.id.username)
         private val messageText: TextView = itemView.findViewById(R.id.message)
         private val timeAgo: TextView = itemView.findViewById(R.id.timeAgo)
         private val conversationImage: ImageView = itemView.findViewById(R.id.userImage)
+        private val conversationStatusImage: ImageView = itemView.findViewById(R.id.userStatusImage)
 
         init {
             itemView.setOnClickListener {
-                val action = ConversationsFragmentDirections.actionMessagesFragmentToSingleConversationFragment(conversationId = conversations[adapterPosition].conversationId ?: "")
+                val action =
+                    ConversationsFragmentDirections.actionMessagesFragmentToSingleConversationFragment(
+                        conversationId = conversations[adapterPosition].conversationId ?: "",
+                    )
                 it.findNavController().navigate(action)
             }
         }
@@ -41,7 +41,18 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
 
             conversation.messages?.let { messages ->
                 val lastMessage = messages.lastOrNull()
-                messageText.text = lastMessage?.message
+
+                if (lastMessage != null && !lastMessage.message.isNullOrBlank()) {
+                    messageText.text = lastMessage.message
+                } else {
+                    if (lastMessage?.messageImageUrl != null) {
+                        messageText.text = "{Zdjęcie}"
+                    } else if (lastMessage?.messageRecordingUrl != null) {
+                        messageText.text = "{Nagranie}"
+                    } else {
+                        messageText.text = ""
+                    }
+                }
                 timeAgo.text = getRelativeTimeAgo(lastMessage?.timestamp?.toDate()?.time ?: 0)
             }
 
@@ -54,11 +65,26 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
                             Glide.with(itemView.context)
                                 .load(userDetails.profileImageUrl)
                                 .into(conversationImage)
+                            updateStatusImageButton(userDetails.status)
                         }
                     }
                 }
             } else {
                 username.text = "Group Chat"
+                conversationStatusImage.setImageResource(R.drawable.chrome_red)
+            }
+        }
+
+        private fun updateStatusImageButton(status: String?) {
+            status?.let {
+                when (it) {
+                    "Dostępny" -> conversationStatusImage.setImageResource(R.drawable.chrome_green)
+                    "Zaraz wracam" -> conversationStatusImage.setImageResource(R.drawable.chrome_yellow)
+                    "Nie przeszkadzać" -> conversationStatusImage.setImageResource(R.drawable.chrome_red)
+                    else -> {
+                        conversationStatusImage.setImageResource(R.drawable.chrome_red)
+                    }
+                }
             }
         }
 
@@ -66,18 +92,25 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
             return DateUtils.getRelativeTimeSpanString(
                 timeInMillis,
                 System.currentTimeMillis(),
-                DateUtils.MINUTE_IN_MILLIS
+                DateUtils.MINUTE_IN_MILLIS,
             ).toString()
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationViewHolder {
-        val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.conversation_item, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ConversationViewHolder {
+        val itemView =
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.conversation_item, parent, false)
         return ConversationViewHolder(itemView)
     }
 
-    override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ConversationViewHolder,
+        position: Int,
+    ) {
         val currentConversation = conversations[position]
         holder.bind(currentConversation)
     }
@@ -90,7 +123,10 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
     private val auth = FirebaseAuth.getInstance()
     private val currentUserId = auth.currentUser?.uid
 
-    private fun getUserDetails(userId: String, callback: (User?) -> Unit) {
+    private fun getUserDetails(
+        userId: String,
+        callback: (User?) -> Unit,
+    ) {
         firestore.collection("Users").document(userId)
             .get()
             .addOnSuccessListener { documentSnapshot ->
