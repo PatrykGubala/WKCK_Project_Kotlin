@@ -204,7 +204,7 @@ class SingleConversationAdapter : ListAdapter<Message, SingleConversationAdapter
             Glide.with(itemView.context)
                 .downloadOnly()
                 .load(audioUrl)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .listener(
                     object : RequestListener<File> {
                         override fun onLoadFailed(
