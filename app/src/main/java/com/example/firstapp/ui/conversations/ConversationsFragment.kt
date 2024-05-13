@@ -5,8 +5,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.firstapp.R
 import com.example.firstapp.databinding.FragmentConversationsBinding
 import com.example.firstapp.ui.data.Conversation
 import com.example.firstapp.ui.data.Message
@@ -48,6 +51,7 @@ class ConversationsFragment : Fragment() {
             if (!isSoloSelected) {
                 isSoloSelected = true
                 refreshConversations()
+                updateButtonBackgrounds()
             }
         }
 
@@ -55,8 +59,28 @@ class ConversationsFragment : Fragment() {
             if (isSoloSelected) {
                 isSoloSelected = false
                 refreshConversations()
+                updateButtonBackgrounds()
             }
         }
+        binding.floatingActionButton.setOnClickListener {
+            findNavController().navigate(R.id.action_messagesFragment_to_createGroupConversationFragment)
+        }
+    }
+
+    private fun updateButtonBackgrounds() {
+        val selectedColor = ContextCompat.getColor(requireContext(), R.color.dark_grey)
+        val unselectedColor = ContextCompat.getColor(requireContext(), R.color.black)
+
+        binding.button.backgroundTintList =
+            ContextCompat.getColorStateList(
+                requireContext(),
+                if (isSoloSelected) R.color.dark_grey else R.color.black,
+            )
+        binding.button2.backgroundTintList =
+            ContextCompat.getColorStateList(
+                requireContext(),
+                if (!isSoloSelected) R.color.dark_grey else R.color.black,
+            )
     }
 
     private fun refreshConversations() {

@@ -47,9 +47,9 @@
                         android:id="@+id/mainTopicTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Czy można wziąć jeżyka do domu?"
+                        android:text="Jak usunąć konto?"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="18sp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -59,7 +59,9 @@
                     android:id="@+id/expandedTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Ależ można\nJeszcze jak\ngdyby nie było można to inaczej stworzony był świat"
+                    android:textSize="16sp"
+
+                    android:text="Przejdź do zakładki ”Profil”\nNaciśnij przycisk “Usuń konto”\nPrzejdź przez autoryzację i potwierdź chęć usunięcia konta "
                     android:textColor="@color/white"
                     android:visibility="gone" />
             </LinearLayout>
@@ -88,9 +90,9 @@
                         android:id="@+id/mainTopicTextView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Czy można wziąć dwa jeżyki do domu?"
+                        android:text="Jak wylogować się z aplikacji?"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="18sp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -100,7 +102,8 @@
                     android:id="@+id/expandedTextView2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="To nie jest tak że można lub nie można\nGdyby nie było można to bóg inaczej stwrozył by świat?\n Ale pomyśl o jeżyku, czy jeżyk naprawde tego chce?\nPewnie tak bo byłoby mu miło np\n To jest trunda kwestia i trzeba nad nią pomyślec"
+                    android:textSize="16sp"
+                    android:text="Przejdź do zakładki ”Profil”\nNaciśnij przycisk “Wyloguj” "
                     android:textColor="@color/white"
                     android:visibility="gone" />
             </LinearLayout>

@@ -34,17 +34,18 @@
         android:id="@+id/textInputLayoutPassword"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
+        app:endIconMode="password_toggle"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
-        app:endIconMode="password_toggle" >
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:backgroundTint="@color/dark_grey"
-            android:inputType="textPassword"
             android:hint="Hasło:"
+            android:inputType="textPassword"
             android:textAlignment="viewStart"
             android:textColor="@color/white"
             android:textColorHighlight="@color/grey"
@@ -74,7 +75,7 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="108dp"
         android:text="Adres e-mail:"
         android:textColor="@color/white"
@@ -88,7 +89,7 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="20dp"
         android:text="Hasło:"
         android:textColor="@color/white"
@@ -97,13 +98,11 @@
         app:layout_constraintTop_toBottomOf="@+id/textInputLayoutEmail" />
 
 
-
-
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutEmail"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
@@ -112,9 +111,9 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:backgroundTint="@color/dark_grey"
-            android:inputType="textEmailAddress"
-
             android:hint="Adres e-mail:"
+
+            android:inputType="textEmailAddress"
             android:textAlignment="viewStart"
             android:textColor="@color/white"
             android:textColorHighlight="@color/grey"

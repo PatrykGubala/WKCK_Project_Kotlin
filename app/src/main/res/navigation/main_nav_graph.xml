@@ -22,7 +22,9 @@
                 android:name="conversationId"
                 app:argType="string" />
         </action>
-
+        <action
+            android:id="@+id/action_messagesFragment_to_createGroupConversationFragment"
+            app:destination="@id/createGroupConversationFragment" />
     </fragment>
     <fragment
         tools:layout="@layout/fragment_friends"
@@ -78,6 +80,14 @@
         android:name="com.example.firstapp.ui.profile.ProfileEditUsernameFragment"
         android:label="ProfileEditUsernameFragment"
         tools:layout="@layout/fragment_profile_friends_requests" >
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/createGroupConversationFragment"
+        android:name="com.example.firstapp.ui.conversations.group.CreateGroupConversationFragment"
+        android:label="CreateGroupConversationFragment"
+        tools:layout="@layout/fragment_conversations_create_new_group" >
 
     </fragment>
 
