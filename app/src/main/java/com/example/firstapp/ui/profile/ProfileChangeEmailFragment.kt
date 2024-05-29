@@ -1,7 +1,6 @@
 package com.example.firstapp.ui.profile
 
 import android.content.ContentValues.TAG
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,7 +16,6 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
 
 class ProfileChangeEmailFragment : Fragment() {
     private var savedNavBarColor: Int = 0
@@ -31,15 +29,16 @@ class ProfileChangeEmailFragment : Fragment() {
     private lateinit var passwordLayout: TextInputLayout
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View? {
         val view = inflater.inflate(R.layout.fragment_profile_change_email, container, false)
 
         auth = FirebaseAuth.getInstance()
         currentUser = auth.currentUser!!
 
-        currentEmailLayout = view.findViewById(R.id.textInputLayoutEmail)
+        currentEmailLayout = view.findViewById(R.id.textInputLayoutGroupName)
         newEmailLayout = view.findViewById(R.id.textInputLayoutNewEmail)
         passwordLayout = view.findViewById(R.id.textInputLayoutPassword)
 
@@ -54,7 +53,10 @@ class ProfileChangeEmailFragment : Fragment() {
         return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         savedNavBarColor = requireActivity().window.navigationBarColor
         requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
         bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
@@ -63,7 +65,7 @@ class ProfileChangeEmailFragment : Fragment() {
         }
     }
 
-        private fun handleChangeEmail() {
+    private fun handleChangeEmail() {
         val currentEmail = currentEmailLayout.editText?.text.toString().trim()
         val newEmail = newEmailLayout.editText?.text.toString().trim()
         val password = passwordLayout.editText?.text.toString()
@@ -95,10 +97,10 @@ class ProfileChangeEmailFragment : Fragment() {
             Log.e(TAG, "User is null")
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         bottomNavView.visibility = View.VISIBLE
         requireActivity().window.navigationBarColor = savedNavBarColor
     }
-
 }

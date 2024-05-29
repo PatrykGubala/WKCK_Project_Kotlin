@@ -1,0 +1,86 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/black"
+    android:clickable="true"
+    android:focusable="true"
+    android:padding="8dp">
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardViewProfileAvatar"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="8dp"
+        app:cardCornerRadius="45dp"
+        app:circularflow_radiusInDP="360dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <ImageView
+            android:id="@+id/userImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="centerCrop"
+            android:elevation="2dp"
+            tools:srcCompat="@tools:sample/avatars" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/cardViewProfileAvatar"
+        android:layout_alignBottom="@+id/cardViewProfileAvatar"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginBottom="19dp"
+        android:layout_toEndOf="@id/cardViewProfileAvatar"
+        android:text="Username"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/usernameCodeHelp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/cardViewProfileAvatar"
+        android:layout_alignBottom="@+id/cardViewProfileAvatar"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginBottom="19dp"
+        android:layout_toEndOf="@id/username"
+        android:text="#"
+        android:textColor="@color/grey"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/usernameCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/cardViewProfileAvatar"
+        android:layout_alignBottom="@+id/cardViewProfileAvatar"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginBottom="19dp"
+        android:layout_toEndOf="@id/usernameCodeHelp"
+        android:text="2135"
+        android:textColor="@color/grey"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <CheckBox
+        android:id="@+id/checkBoxSelectFriend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/usernameCode"
+        android:layout_alignBottom="@+id/usernameCode"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="-14dp"
+        android:background="@color/black" />
+</RelativeLayout>
