@@ -6,12 +6,14 @@ import kotlinx.coroutines.withContext
 
 data class Conversation(
     val conversationId: String? = null,
-    val status: String? = "solo",
+    val name: String? = null,
+    val conversationImageUrl: String? = null,
+    val status: String? = null,
     val participants: List<String>? = null,
     val messageIds: List<String>? = null,
-    var messages: List<Message>? = null
+    var messages: List<Message>? = null,
 ) {
-    constructor() : this(null,null, ArrayList(), ArrayList())
+    constructor() : this(null, null, null, null, ArrayList(), ArrayList())
 
     suspend fun populateMessagesFromIds() {
         if (messageIds.isNullOrEmpty()) {

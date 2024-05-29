@@ -55,8 +55,12 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
                 }
                 timeAgo.text = getRelativeTimeAgo(lastMessage?.timestamp?.toDate()?.time ?: 0)
             }
-
-            if (conversation.status == "solo" && conversation.participants != null) {
+            if (conversation.status == "group") {
+                username.text = conversation.name ?: "Group Chat"
+                Glide.with(itemView.context)
+                    .load(conversation.conversationImageUrl)
+                    .into(conversationImage)
+            } else if (conversation.status == "solo" && conversation.participants != null) {
                 val otherParticipantId = conversation.participants.find { it != currentUserId }
                 otherParticipantId?.let { userId ->
                     getUserDetails(userId) { user ->
@@ -70,7 +74,7 @@ class ConversationsAdapter(private val conversations: List<Conversation>) :
                     }
                 }
             } else {
-                username.text = "Group Chat"
+                username.text = "Chat"
                 conversationStatusImage.setImageResource(R.drawable.chrome_red)
             }
         }

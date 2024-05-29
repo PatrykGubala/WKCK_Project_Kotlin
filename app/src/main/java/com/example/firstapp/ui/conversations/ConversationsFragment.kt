@@ -38,7 +38,7 @@ class ConversationsFragment : Fragment() {
     ): View {
         _binding = FragmentConversationsBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
+        updateButtonBackgrounds()
         setupRecyclerView()
         setupButtonListeners()
         userId?.let { fetchConversations(it) }
@@ -137,6 +137,8 @@ class ConversationsFragment : Fragment() {
                             val participantsList = conversationDocument.get("participants") as? List<String>
                             val messageIds = conversationDocument.get("messageIds") as? List<String>
                             val status = conversationDocument.getString("status")
+                            val name = conversationDocument.getString("name")
+                            val conversationImageUrl = conversationDocument.getString("conversationImageUrl")
 
                             participantsList?.let { participants.addAll(it) }
 
@@ -147,6 +149,8 @@ class ConversationsFragment : Fragment() {
                                         status = status,
                                         participants = participants,
                                         messageIds = messageIds,
+                                        conversationImageUrl = conversationImageUrl,
+                                        name = name,
                                     )
                                 Log.d(TAG, "CONV ID: $conversationId, $messageIds ")
 

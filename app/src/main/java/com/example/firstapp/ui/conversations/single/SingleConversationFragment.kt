@@ -91,7 +91,7 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
 
         conversationId?.let {
             viewModel.loadMessages(it)
-            loadFriendData(it)
+            loadConversationDetails(it)
         }
         view.findViewById<ImageButton>(R.id.imageButtonPlus).setOnClickListener {
             selectImageFromGallery()
@@ -167,6 +167,28 @@ class SingleConversationFragment : Fragment(), ScrollToBottomListener {
                 }
             }
         }
+    }
+
+    private fun loadConversationDetails(conversationId: String) {
+        firestore.collection("Conversations").document(conversationId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val name = documentSnapshot.getString("name")
+                val imageUrl = documentSnapshot.getString("conversationImageUrl")
+                val status = documentSnapshot.getString("status")
+
+                if (status == "group") {
+                    binding.textViewFriendsUsername.text = name ?: "Group Chat"
+                    imageUrl?.let {
+                        Glide.with(this).load(it).into(binding.imageViewFriendsImage)
+                    }
+                } else {
+                    loadFriendData(conversationId)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Error loading conversation details", exception)
+            }
     }
 
     override fun onMessageHeightChanged(height: Int) {
