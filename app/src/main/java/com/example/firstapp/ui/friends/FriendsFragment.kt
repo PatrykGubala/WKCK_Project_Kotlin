@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -17,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class FriendsFragment : Fragment() {
-
     private var _binding: FragmentFriendsBinding? = null
     private val binding get() = _binding!!
 
@@ -28,7 +28,7 @@ class FriendsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentFriendsBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -38,14 +38,34 @@ class FriendsFragment : Fragment() {
         return root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.friends.observe(viewLifecycleOwner, Observer { friends ->
-            friends?.let {
-                friendsAdapter.submitList(it)
-            }
-        })
+        viewModel.filteredFriends.observe(
+            viewLifecycleOwner,
+            Observer { friends ->
+                friends?.let {
+                    friendsAdapter.submitList(it)
+                }
+            },
+        )
+
+        binding.searchView.setOnQueryTextListener(
+            object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    viewModel.setSearchQuery(newText ?: "")
+                    return true
+                }
+            },
+        )
+
         binding.floatingActionButton.setOnClickListener {
             navigateToAddFriendScreen()
         }
@@ -58,9 +78,10 @@ class FriendsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        friendsAdapter = FriendsAdapter { friend ->
-            startConversationWithFriend(friend)
-        }
+        friendsAdapter =
+            FriendsAdapter { friend ->
+                startConversationWithFriend(friend)
+            }
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = friendsAdapter
@@ -73,37 +94,40 @@ class FriendsFragment : Fragment() {
         val userId = auth.currentUser?.uid
 
         userId?.let { currentUserId ->
-            val currentUserFriendConversationRef = firestore.collection("Conversations")
-                .whereEqualTo("participants", listOf(currentUserId, friend.userId))
-                .get()
-                .addOnSuccessListener { querySnapshot ->
-                    if (!querySnapshot.isEmpty) {
-                        val existingConversationId = querySnapshot.documents[0].id
-                        val action = FriendsFragmentDirections
-                            .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
-                        findNavController().navigate(action)
-                    } else {
-                        firestore.collection("Conversations")
-                            .whereEqualTo("participants", listOf(friend.userId, currentUserId))
-                            .get()
-                            .addOnSuccessListener { secondQuerySnapshot ->
-                                if (!secondQuerySnapshot.isEmpty) {
-                                    val existingConversationId = secondQuerySnapshot.documents[0].id
-                                    val action = FriendsFragmentDirections
-                                        .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
-                                    findNavController().navigate(action)
-                                } else {
-                                    createNewConversation(friend)
+            val currentUserFriendConversationRef =
+                firestore.collection("Conversations")
+                    .whereEqualTo("participants", listOf(currentUserId, friend.userId))
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        if (!querySnapshot.isEmpty) {
+                            val existingConversationId = querySnapshot.documents[0].id
+                            val action =
+                                FriendsFragmentDirections
+                                    .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
+                            findNavController().navigate(action)
+                        } else {
+                            firestore.collection("Conversations")
+                                .whereEqualTo("participants", listOf(friend.userId, currentUserId))
+                                .get()
+                                .addOnSuccessListener { secondQuerySnapshot ->
+                                    if (!secondQuerySnapshot.isEmpty) {
+                                        val existingConversationId = secondQuerySnapshot.documents[0].id
+                                        val action =
+                                            FriendsFragmentDirections
+                                                .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
+                                        findNavController().navigate(action)
+                                    } else {
+                                        createNewConversation(friend)
+                                    }
                                 }
-                            }
-                            .addOnFailureListener { exception ->
-                                Log.e("FriendsFragment", "Error fetching conversations", exception)
-                            }
+                                .addOnFailureListener { exception ->
+                                    Log.e("FriendsFragment", "Error fetching conversations", exception)
+                                }
+                        }
                     }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("FriendsFragment", "Error fetching conversations", exception)
-                }
+                    .addOnFailureListener { exception ->
+                        Log.e("FriendsFragment", "Error fetching conversations", exception)
+                    }
         }
     }
 
@@ -116,17 +140,19 @@ class FriendsFragment : Fragment() {
             val conversationId = firestore.collection("Conversations").document().id
             val conversationRef = firestore.collection("Conversations").document(conversationId)
 
-            val conversationData = hashMapOf(
-                "conversationId" to conversationId,
-                "status" to "solo",
-                "participants" to listOf(currentUserId, friend.userId),
-                "messageIds" to listOf<Message>(),
-            )
+            val conversationData =
+                hashMapOf(
+                    "conversationId" to conversationId,
+                    "status" to "solo",
+                    "participants" to listOf(currentUserId, friend.userId),
+                    "messageIds" to listOf<Message>(),
+                )
 
             conversationRef.set(conversationData)
                 .addOnSuccessListener {
-                    val action = FriendsFragmentDirections
-                        .actionFriendsFragmentToSingleConversationFragment(conversationId)
+                    val action =
+                        FriendsFragmentDirections
+                            .actionFriendsFragmentToSingleConversationFragment(conversationId)
                     findNavController().navigate(action)
                 }
                 .addOnFailureListener { exception ->
