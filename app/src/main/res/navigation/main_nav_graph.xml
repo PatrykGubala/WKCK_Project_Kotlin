@@ -74,12 +74,23 @@
         <action
             android:id="@+id/action_profileFragment_to_profileFAQFragment"
             app:destination="@id/profileFAQFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileDeleteAccountFragment"
+            app:destination="@id/profileDeleteAccountFragment" />
     </fragment>
     <fragment
         android:id="@+id/profileEditUsernameFragment"
         android:name="com.example.firstapp.ui.profile.ProfileEditUsernameFragment"
         android:label="ProfileEditUsernameFragment"
         tools:layout="@layout/fragment_profile_friends_requests" >
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileDeleteAccountFragment"
+        android:name="com.example.firstapp.ui.profile.ProfileDeleteAccountFragment"
+        android:label="ProfileDeleteAccountFragment"
+        tools:layout="@layout/fragment_profile_delete_account" >
 
     </fragment>
 

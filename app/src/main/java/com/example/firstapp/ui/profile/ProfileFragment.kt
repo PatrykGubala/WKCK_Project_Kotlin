@@ -28,7 +28,6 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.storage.FirebaseStorage
 
 class ProfileFragment : BaseFragment() {
-
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
@@ -40,13 +39,16 @@ class ProfileFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         userDocRef = FirebaseFirestore.getInstance().collection("Users").document(userId)
@@ -72,47 +74,50 @@ class ProfileFragment : BaseFragment() {
         binding.buttonLogout.setOnClickListener {
             logout()
         }
-
+        binding.buttonDeleteAccount.setOnClickListener {
+            showProfileDeleteAccount()
+        }
         setupProfileDataObserver()
     }
 
     private fun setupProfileDataObserver() {
-        userSnapshotListener = userDocRef.addSnapshotListener { snapshot, exception ->
-            if (exception != null) {
-                Log.w(TAG, "Listen failed", exception)
-                return@addSnapshotListener
-            }
-
-            if (snapshot != null && snapshot.exists()) {
-                val email = snapshot.getString("email")
-                val username = snapshot.getString("username")
-                val usernameCode = snapshot.getString("usernameCode")
-
-                binding.textViewEmail.text = email
-                binding.textViewUsername.text = username
-                binding.textViewUsernameCode.text = "#$usernameCode"
-
-                val photoUrl = snapshot.getString("profileImageUrl")
-                if (photoUrl != null) {
-                    loadProfileImageWithGlide(photoUrl)
+        userSnapshotListener =
+            userDocRef.addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    Log.w(TAG, "Listen failed", exception)
+                    return@addSnapshotListener
                 }
-                val status = snapshot.getString("status")
-                updateStatusImageButton(status)
 
-                val currentUser = FirebaseAuth.getInstance().currentUser
-                if (currentUser != null && currentUser.email != email) {
-                    userDocRef.update("email", currentUser.email)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "Email updated in Firestore to match the authenticated user's email")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Error updating email in Firestore", e)
-                        }
+                if (snapshot != null && snapshot.exists()) {
+                    val email = snapshot.getString("email")
+                    val username = snapshot.getString("username")
+                    val usernameCode = snapshot.getString("usernameCode")
+
+                    binding.textViewEmail.text = email
+                    binding.textViewUsername.text = username
+                    binding.textViewUsernameCode.text = "#$usernameCode"
+
+                    val photoUrl = snapshot.getString("profileImageUrl")
+                    if (photoUrl != null) {
+                        loadProfileImageWithGlide(photoUrl)
+                    }
+                    val status = snapshot.getString("status")
+                    updateStatusImageButton(status)
+
+                    val currentUser = FirebaseAuth.getInstance().currentUser
+                    if (currentUser != null && currentUser.email != email) {
+                        userDocRef.update("email", currentUser.email)
+                            .addOnSuccessListener {
+                                Log.d(TAG, "Email updated in Firestore to match the authenticated user's email")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e(TAG, "Error updating email in Firestore", e)
+                            }
+                    }
+                } else {
+                    Log.d(TAG, "Current data: null")
                 }
-            } else {
-                Log.d(TAG, "Current data: null")
             }
-        }
     }
 
     private fun updateStatusImageButton(status: String?) {
@@ -131,22 +136,32 @@ class ProfileFragment : BaseFragment() {
         val dialog = (binding.imageButtonStatus.tag as? BottomSheetDialog)
         dialog?.dismiss()
     }
-    private fun showChangeProfileEmail(){
+
+    private fun showProfileDeleteAccount() {
+        val action = ProfileFragmentDirections.actionProfileFragmentToProfileDeleteAccountFragment()
+        findNavController().navigate(action)
+    }
+
+    private fun showChangeProfileEmail() {
         val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangeEmailFragment()
         findNavController().navigate(action)
     }
-    private fun showChangeProfilePassword(){
+
+    private fun showChangeProfilePassword() {
         val action = ProfileFragmentDirections.actionProfileFragmentToProfileChangePasswordFragment()
         findNavController().navigate(action)
     }
-    private fun showProfileFAQ(){
+
+    private fun showProfileFAQ() {
         val action = ProfileFragmentDirections.actionProfileFragmentToProfileFAQFragment()
         findNavController().navigate(action)
     }
-    private fun showProfileFriendsRequests(){
+
+    private fun showProfileFriendsRequests() {
         val action = ProfileFragmentDirections.actionProfileFragmentToProfileFriendsRequestsFragment()
         findNavController().navigate(action)
     }
+
     private fun showEditProfileBottomSheet() {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.bottomsheet_profile_edit, null)
@@ -173,13 +188,14 @@ class ProfileFragment : BaseFragment() {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
-    private val pickImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data: Intent? = result.data
-            val imageUri = data?.data
-            imageUri?.let { uploadImageToFirebaseStorage(it) }
+    private val pickImage =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val imageUri = data?.data
+                imageUri?.let { uploadImageToFirebaseStorage(it) }
+            }
         }
-    }
 
     private fun selectImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -230,12 +246,13 @@ class ProfileFragment : BaseFragment() {
                     }
 
                     radioGroupStatus.setOnCheckedChangeListener { _, checkedId ->
-                        val status = when (checkedId) {
-                            R.id.radioGreen -> "Dostępny"
-                            R.id.radioYellow -> "Zaraz wracam"
-                            R.id.radioRed -> "Nie przeszkadzać"
-                            else -> ""
-                        }
+                        val status =
+                            when (checkedId) {
+                                R.id.radioGreen -> "Dostępny"
+                                R.id.radioYellow -> "Zaraz wracam"
+                                R.id.radioRed -> "Nie przeszkadzać"
+                                else -> ""
+                            }
                         updateProfileStatus(status)
                         bottomSheetDialog.dismiss()
                     }
