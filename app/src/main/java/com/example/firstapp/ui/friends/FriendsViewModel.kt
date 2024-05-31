@@ -10,12 +10,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
-class FriendsViewModel : ViewModel() {
-    private val _friends = MutableLiveData<List<User>>()
+class FriendsViewModel(private val firestore: FirebaseFirestore, private val auth: FirebaseAuth) : ViewModel() {
+    val _friends = MutableLiveData<List<User>>()
     val friends: LiveData<List<User>> = _friends
 
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
     private val userId = auth.currentUser?.uid
     private val _searchQuery = MutableLiveData<String>("")
     private val _filteredFriends =

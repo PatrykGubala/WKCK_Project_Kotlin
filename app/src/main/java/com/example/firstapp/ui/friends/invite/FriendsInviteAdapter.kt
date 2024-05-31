@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.firstapp.R
@@ -12,7 +13,6 @@ import com.example.firstapp.ui.data.User
 import com.google.firebase.auth.FirebaseAuth
 
 class FriendsInviteAdapter(private val viewModel: FriendsInviteViewModel) : RecyclerView.Adapter<FriendsInviteAdapter.FriendsInviteViewHolder>() {
-
     private var friendsList = emptyList<User>()
 
     fun submitList(list: List<User>) {
@@ -20,13 +20,20 @@ class FriendsInviteAdapter(private val viewModel: FriendsInviteViewModel) : Recy
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendsInviteViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.friends_invite_list_item, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): FriendsInviteViewHolder {
+        val view =
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.friends_invite_list_item, parent, false)
         return FriendsInviteViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: FriendsInviteViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: FriendsInviteViewHolder,
+        position: Int,
+    ) {
         val friend = friendsList[position]
         holder.bind(friend)
     }
@@ -47,6 +54,7 @@ class FriendsInviteAdapter(private val viewModel: FriendsInviteViewModel) : Recy
                 val userId = FirebaseAuth.getInstance().currentUser?.uid
                 userId?.let {
                     friend.userId?.let { it1 -> viewModel.sendFriendRequest(it, it1) }
+                    showToast("Wysłano zaproszenie do ${friend.username}")
                 }
             }
         }
@@ -57,6 +65,10 @@ class FriendsInviteAdapter(private val viewModel: FriendsInviteViewModel) : Recy
             Glide.with(itemView.context)
                 .load(user.profileImageUrl)
                 .into(userImageView)
+        }
+
+        private fun showToast(message: String) {
+            Toast.makeText(itemView.context, message, Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -7,22 +7,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstapp.databinding.FragmentFriendsBinding
 import com.example.firstapp.ui.data.Message
 import com.example.firstapp.ui.data.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class FriendsFragment : Fragment() {
     private var _binding: FragmentFriendsBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: FriendsViewModel by viewModels()
-
+    private lateinit var viewModel: FriendsViewModel
     private lateinit var friendsAdapter: FriendsAdapter
 
     override fun onCreateView(
@@ -32,9 +32,6 @@ class FriendsFragment : Fragment() {
     ): View {
         _binding = FragmentFriendsBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
-        setupRecyclerView()
-
         return root
     }
 
@@ -43,6 +40,12 @@ class FriendsFragment : Fragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        val firestore = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
+        val factory = FriendsViewModelFactory(firestore, auth)
+        viewModel = ViewModelProvider(this, factory).get(FriendsViewModel::class.java)
+
+        setupRecyclerView()
 
         viewModel.filteredFriends.observe(
             viewLifecycleOwner,
@@ -117,7 +120,7 @@ class FriendsFragment : Fragment() {
                                                 .actionFriendsFragmentToSingleConversationFragment(existingConversationId)
                                         findNavController().navigate(action)
                                     } else {
-                                        createNewConversation(friend)
+                                        createNewConversation(friend, listOf(userId, friend.userId))
                                     }
                                 }
                                 .addOnFailureListener { exception ->
@@ -131,7 +134,10 @@ class FriendsFragment : Fragment() {
         }
     }
 
-    private fun createNewConversation(friend: User) {
+    private fun createNewConversation(
+        friend: User,
+        participants: List<String?>,
+    ) {
         val firestore = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid
@@ -144,21 +150,30 @@ class FriendsFragment : Fragment() {
                 hashMapOf(
                     "conversationId" to conversationId,
                     "status" to "solo",
-                    "participants" to listOf(currentUserId, friend.userId),
+                    "participants" to participants,
                     "messageIds" to listOf<Message>(),
                 )
 
             conversationRef.set(conversationData)
                 .addOnSuccessListener {
-                    val action =
-                        FriendsFragmentDirections
-                            .actionFriendsFragmentToSingleConversationFragment(conversationId)
-                    findNavController().navigate(action)
+                    participants.forEach { userId ->
+                        if (userId != null) {
+                            firestore.collection("Users").document(userId)
+                                .update("conversations", FieldValue.arrayUnion(conversationRef))
+                                .addOnFailureListener { e -> Log.e("FriendsFragment", "Error adding conversation reference", e) }
+                        }
+                    }
+                    navigateToConversation(conversationRef.id)
                 }
-                .addOnFailureListener { exception ->
-                    Log.e("FriendsFragment", "Error adding conversation", exception)
+                .addOnFailureListener { e ->
+                    Log.e("FriendsFragment", "Error creating new conversation", e)
                 }
         }
+    }
+
+    private fun navigateToConversation(conversationId: String) {
+        val action = FriendsFragmentDirections.actionFriendsFragmentToSingleConversationFragment(conversationId)
+        findNavController().navigate(action)
     }
 
     override fun onDestroyView() {

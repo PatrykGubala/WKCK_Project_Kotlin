@@ -2,8 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
-    id ("androidx.navigation.safeargs.kotlin")
-
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -36,6 +35,12 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -53,9 +58,18 @@ dependencies {
     implementation("com.google.firebase:firebase-storage:20.3.0")
     implementation("com.github.bumptech.glide:glide:4.14.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.14.2")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.14.2")
     implementation("com.google.code.gson:gson:2.10.1")
-    testImplementation("junit:junit:4.13.2")
+
+    androidTestImplementation("org.mockito:mockito-android:4.0.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    testImplementation("org.robolectric:robolectric:4.12.2")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-core:4.0.0")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("androidx.test:core-ktx:1.5.0")
+    testImplementation("androidx.test.ext:junit-ktx:1.1.5")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }

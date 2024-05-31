@@ -11,21 +11,24 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
-class FriendsInviteViewModel : ViewModel() {
-
+class FriendsInviteViewModel(
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth,
+    private val friendsViewModel: FriendsViewModel,
+) : ViewModel() {
     private val _friends = MutableLiveData<List<User>?>()
     val friends: LiveData<List<User>?> = _friends
 
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
     private val userId = auth.currentUser?.uid
 
-    private val friendsViewModel = FriendsViewModel()
     init {
         loadFriends()
     }
 
-    fun sendFriendRequest(userId: String, friendUserId: String) {
+    fun sendFriendRequest(
+        userId: String,
+        friendUserId: String,
+    ) {
         firestore.collection("Users").document(friendUserId)
             .update("friendsRequests", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
@@ -50,8 +53,9 @@ class FriendsInviteViewModel : ViewModel() {
             }
 
             if (usernameCode.isNotBlank()) {
-                searchQuery = searchQuery.whereGreaterThanOrEqualTo("usernameCode", usernameCode)
-                    .whereLessThanOrEqualTo("usernameCode", usernameCode + "\uf8ff")
+                searchQuery =
+                    searchQuery.whereGreaterThanOrEqualTo("usernameCode", usernameCode)
+                        .whereLessThanOrEqualTo("usernameCode", usernameCode + "\uf8ff")
             }
 
             searchQuery.get()
@@ -79,7 +83,6 @@ class FriendsInviteViewModel : ViewModel() {
         }
     }
 
-
     private fun loadFriends() {
         friendsViewModel.friends.observeForever { friendsList ->
             friendsList?.let {
@@ -87,7 +90,6 @@ class FriendsInviteViewModel : ViewModel() {
             }
         }
         friendsViewModel.fetchFriends()
-
     }
 
     private fun friendAlreadyExists(friendId: String?): Boolean {

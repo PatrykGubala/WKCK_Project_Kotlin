@@ -76,6 +76,7 @@ class CreateGroupConversationFragment : Fragment() {
         viewModel.groupCreated.observe(viewLifecycleOwner) { success ->
             if (success) {
                 Toast.makeText(context, "Group created successfully", Toast.LENGTH_SHORT).show()
+                requireActivity().onBackPressed()
             } else {
                 Toast.makeText(context, "Failed to create group", Toast.LENGTH_SHORT).show()
             }

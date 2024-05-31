@@ -23,10 +23,10 @@ class ConversationsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var conversationsAdapter: ConversationsAdapter
-    private val conversationList = mutableListOf<Conversation>()
+    val conversationList = mutableListOf<Conversation>()
 
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    var firestore = FirebaseFirestore.getInstance()
+    var auth = FirebaseAuth.getInstance()
     private val userId = auth.currentUser?.uid
 
     private var isSoloSelected = true
@@ -97,7 +97,7 @@ class ConversationsFragment : Fragment() {
         }
     }
 
-    private fun fetchConversations(userId: String) {
+    fun fetchConversations(userId: String) {
         val conversationsRef = firestore.collection("Users").document(userId)
 
         conversationsRef.addSnapshotListener { documentSnapshot, exception ->
@@ -119,7 +119,7 @@ class ConversationsFragment : Fragment() {
         }
     }
 
-    private fun fetchConversationsByRefs(conversationRefs: List<DocumentReference>) {
+    fun fetchConversationsByRefs(conversationRefs: List<DocumentReference>) {
         conversationRefs.forEach { conversationRef ->
             conversationRef.collection("messages")
                 .orderBy("timestamp")

@@ -1,7 +1,6 @@
 package com.example.firstapp.ui.profile.requests
 
 import android.content.ContentValues.TAG
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,7 +17,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class FriendsRequestsFragment : Fragment() {
-
     private var _binding: FragmentProfileFriendsRequestsBinding? = null
     private val binding get() = _binding!!
 
@@ -35,7 +33,7 @@ class FriendsRequestsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentProfileFriendsRequestsBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -49,7 +47,11 @@ class FriendsRequestsFragment : Fragment() {
         }
         return root
     }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         savedNavBarColor = requireActivity().window.navigationBarColor
         requireActivity().window.navigationBarColor = requireContext().getColor(R.color.black)
         bottomNavView = requireActivity().findViewById(R.id.bottomNavView) ?: return
@@ -103,57 +105,47 @@ class FriendsRequestsFragment : Fragment() {
         val currentUser = FirebaseAuth.getInstance().currentUser?.uid
 
         if (currentUser != null) {
-            val currentUserRef =
-                FirebaseFirestore.getInstance().collection("Users").document(currentUser)
-            currentUserRef.get().addOnSuccessListener { documentSnapshot ->
-                val currentUser = documentSnapshot.toObject(User::class.java)
-                currentUser?.let {
-                    val updatedFriendRequests = currentUser.friendsRequests?.toMutableList()
-                    updatedFriendRequests?.remove(user.userId)
-                    currentUserRef.update("friendsRequests", updatedFriendRequests)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "Friend request removed successfully from current user")
-                            friendsRequestsList.remove(user)
-                            friendsRequestsAdapter.notifyDataSetChanged()
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Error removing friend request from current user", e)
-                        }
+            val currentUserRef = firestore.collection("Users").document(currentUser)
+            val friendRef = firestore.collection("Users").document(user.userId!!)
 
-                    val updatedFriends = currentUser.friends?.toMutableList()
-                    updatedFriends?.add(user.userId!!) // Add friend
-                    currentUserRef.update("friends", updatedFriends)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "Friend added successfully to current user's friends list")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Error adding friend to current user's friends list", e)
-                        }
+            firestore.runTransaction { transaction ->
+                val currentUserDoc = transaction.get(currentUserRef)
+                val friendDoc = transaction.get(friendRef)
+
+                val currentUserFriends = (currentUserDoc["friends"] as? MutableList<String>) ?: mutableListOf()
+                val friendFriends = (friendDoc["friends"] as? MutableList<String>) ?: mutableListOf()
+
+                if (!currentUserFriends.contains(user.userId)) {
+                    currentUserFriends.add(user.userId!!)
                 }
-            }?.addOnFailureListener { e ->
-                Log.e(TAG, "Error fetching current user data", e)
-            }
+                if (!friendFriends.contains(currentUser)) {
+                    friendFriends.add(currentUser)
+                }
 
-            val userRef =
-                FirebaseFirestore.getInstance().collection("Users").document(user.userId!!)
-            userRef.get().addOnSuccessListener { documentSnapshot ->
-                val friendData = documentSnapshot.toObject(User::class.java)
-                val updatedFriendRequests = friendData?.friendsRequests?.toMutableList()
-                updatedFriendRequests?.remove(currentUser)
-                userRef.update("friendsRequests", updatedFriendRequests)
-                    .addOnSuccessListener {
-                        Log.d(TAG, "Friend request removed successfully from friend")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e(TAG, "Error removing friend request from friend", e)
-                    }
-            }?.addOnFailureListener { e ->
-                Log.e(TAG, "Error fetching friend data", e)
+                transaction.update(currentUserRef, "friends", currentUserFriends)
+                transaction.update(friendRef, "friends", friendFriends)
+
+                val currentUserFriendRequests = (currentUserDoc["friendsRequests"] as? MutableList<String>) ?: mutableListOf()
+                currentUserFriendRequests.remove(user.userId)
+                transaction.update(currentUserRef, "friendsRequests", currentUserFriendRequests)
+
+                val friendFriendRequests = (friendDoc["friendsRequests"] as? MutableList<String>) ?: mutableListOf()
+                friendFriendRequests.remove(currentUser)
+                transaction.update(friendRef, "friendsRequests", friendFriendRequests)
+
+                null
+            }.addOnSuccessListener {
+                Log.d(TAG, "Transaction success: both friends lists and friend requests updated")
+                friendsRequestsList.remove(user)
+                friendsRequestsAdapter.notifyDataSetChanged()
+            }.addOnFailureListener { e ->
+                Log.e(TAG, "Transaction failure: ", e)
             }
         } else {
             Log.e(TAG, "Current user is null")
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         bottomNavView.visibility = View.VISIBLE

@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.firstapp.R
@@ -85,8 +86,10 @@ class ProfileChangeEmailFragment : Fragment() {
                             .addOnCompleteListener { updateEmailTask ->
                                 if (updateEmailTask.isSuccessful) {
                                     Log.d(TAG, "Verification email sent successfully")
+                                    showToast("Email weryfikacyjny został wysłany")
                                 } else {
                                     Log.e(TAG, "Verification email sending failed", updateEmailTask.exception)
+                                    showToast("Email weryfikacyjny nie został wysłany")
                                 }
                             }
                     } else {
@@ -102,5 +105,9 @@ class ProfileChangeEmailFragment : Fragment() {
         super.onDestroyView()
         bottomNavView.visibility = View.VISIBLE
         requireActivity().window.navigationBarColor = savedNavBarColor
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 }
